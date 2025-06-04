@@ -1,100 +1,83 @@
 pipeline {
     agent any
-
+    
     environment {
         MAVEN_OPTS = '-Dmaven.repo.local=.m2/repository'
         SERVICE_NAME = 'order-service'
-        REGISTRY_URL = 'ecommerceacr.azurecr.io'
-        ACR_CREDENTIALS_ID = 'your-acr-jenkins-credentials-id'
+        IMAGE_NAME = "selimhorri/${SERVICE_NAME}-ecommerce-boot"
+        IMAGE_TAG = '0.1.0'
     }
-
+    
     stages {
         stage('Checkout') {
             steps {
-                echo '📦 Clonando código fuente...'
+                echo 'Checking out code...'
                 checkout scm
             }
         }
-
-        stage('Build & Package') {
+        
+        stage('Build') {
             steps {
-                dir("${SERVICE_NAME}") {
-                    echo '🔨 Compilando el proyecto con Maven...'
-                    sh 'mvn clean package -X > maven-build-debug.log 2>&1'
+                echo 'Building the service...'
+                dir('order-service') {
+                    sh 'mvn clean compile -DskipTests'
                 }
             }
         }
-
+        
         stage('Unit Tests') {
             steps {
-                dir("${SERVICE_NAME}") {
-                    echo '🧪 Ejecutando pruebas unitarias...'
+                echo 'Running unit tests...'
+                dir('order-service') {
                     sh 'mvn test'
                 }
             }
             post {
                 always {
-                    echo '📄 Publicando resultados de pruebas...'
-                    junit "${SERVICE_NAME}/target/surefire-reports/*.xml"
+                    publishTestResults testResultsPattern: 'order-service/target/surefire-reports/*.xml'
                 }
             }
         }
-
-        stage('Build & Tag Docker Image') {
+        
+        stage('Package') {
             steps {
-                echo '🐳 Construyendo imagen Docker...'
-                script {
-                    env.IMAGE_TAG = "${env.BUILD_NUMBER}"
-                    docker.build("${REGISTRY_URL}/${SERVICE_NAME}:${env.IMAGE_TAG}", "./${SERVICE_NAME}")
-                    echo "✅ Imagen construida: ${REGISTRY_URL}/${SERVICE_NAME}:${env.IMAGE_TAG}"
+                echo 'Packaging the application...'
+                dir('order-service') {
+                    sh 'mvn package -DskipTests'
                 }
             }
         }
-
-        stage('Push Docker Image') {
+        
+        stage('Build Docker Image') {
             steps {
-                echo '🚀 Subiendo imagen a ACR...'
-                script {
-                    docker.withRegistry("https://${REGISTRY_URL}", ACR_CREDENTIALS_ID) {
-                        def image = docker.image("${REGISTRY_URL}/${SERVICE_NAME}:${env.IMAGE_TAG}")
-                        image.push()
-                        echo "✅ Imagen enviada: ${REGISTRY_URL}/${SERVICE_NAME}:${env.IMAGE_TAG}"
+                echo 'Building Docker image...'
+                dir('order-service') {
+                    script {
+                        def image = docker.build("${IMAGE_NAME}:${IMAGE_TAG}")
+                        echo "Docker image built: ${IMAGE_NAME}:${IMAGE_TAG}"
                     }
                 }
             }
         }
-
-        stage('Deploy to Kubernetes (Stage)') {
-            steps {
-                echo '🚢 Desplegando en Kubernetes...'
-                script {
-                    sh """
-                        kubectl set image deployment/${SERVICE_NAME} ${SERVICE_NAME}=${REGISTRY_URL}/${SERVICE_NAME}:${env.IMAGE_TAG} -n default
-                        kubectl rollout status deployment/${SERVICE_NAME} -n default
-                    """
-                    echo "✅ Despliegue completado para ${SERVICE_NAME} con la imagen ${env.IMAGE_TAG}"
-                }
-            }
-        }
-
+        
         stage('Archive Artifacts') {
             steps {
-                echo '📦 Archivando artefactos...'
-                archiveArtifacts artifacts: "${SERVICE_NAME}/target/*.jar", fingerprint: true
+                echo 'Archiving artifacts...'
+                archiveArtifacts artifacts: 'order-service/target/*.jar', fingerprint: true
             }
         }
     }
-
+    
     post {
         always {
-            echo '🧹 Limpiando workspace...'
-            // cleanWs()
+            echo 'Cleaning up workspace...'
+            cleanWs()
         }
         success {
-            echo '✅ ¡Pipeline completada con éxito!'
+            echo 'Pipeline completed successfully!'
         }
         failure {
-            echo '❌ ¡La pipeline falló!'
+            echo 'Pipeline failed!'
         }
     }
-}
+} 
