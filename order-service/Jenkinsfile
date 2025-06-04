@@ -1,83 +1,45 @@
+// TALLER2INGESOFT/Jenkinsfile
 pipeline {
     agent any
-    
+
     environment {
-        MAVEN_OPTS = '-Dmaven.repo.local=.m2/repository'
         SERVICE_NAME = 'order-service'
-        IMAGE_NAME = "selimhorri/${SERVICE_NAME}-ecommerce-boot"
-        IMAGE_TAG = '0.1.0'
+        MAVEN_OPTS = '-Dmaven.repo.local=.m2/repository' // Caché de Maven en el workspace
+        // ACR_CREDENTIALS_ID = 'your-acr-jenkins-credentials-id' // Comentado por ahora
+        // REGISTRY_URL = 'ecommerceacr.azurecr.io' // Comentado por ahora
     }
-    
+
     stages {
-        stage('Checkout') {
+        stage('1. Checkout SCM') {
             steps {
-                echo 'Checking out code...'
+                echo '📦 Clonando código fuente desde SCM...'
                 checkout scm
             }
         }
-        
-        stage('Build') {
+
+        stage('2. Build & Package (Debug)') {
             steps {
-                echo 'Building the service...'
-                dir('order-service') {
-                    sh 'mvn clean compile -DskipTests'
+                echo "🔨 Compilando y empaquetando ${SERVICE_NAME} con Maven en modo debug..."
+                dir("${SERVICE_NAME}") {
+                    // IMPORTANTE: Redirección para capturar todo el log de Maven
+                    sh 'mvn clean package -X > maven-build-debug.log 2>&1'
                 }
             }
         }
-        
-        stage('Unit Tests') {
-            steps {
-                echo 'Running unit tests...'
-                dir('order-service') {
-                    sh 'mvn test'
-                }
-            }
-            post {
-                always {
-                    publishTestResults testResultsPattern: 'order-service/target/surefire-reports/*.xml'
-                }
-            }
-        }
-        
-        stage('Package') {
-            steps {
-                echo 'Packaging the application...'
-                dir('order-service') {
-                    sh 'mvn package -DskipTests'
-                }
-            }
-        }
-        
-        stage('Build Docker Image') {
-            steps {
-                echo 'Building Docker image...'
-                dir('order-service') {
-                    script {
-                        def image = docker.build("${IMAGE_NAME}:${IMAGE_TAG}")
-                        echo "Docker image built: ${IMAGE_NAME}:${IMAGE_TAG}"
-                    }
-                }
-            }
-        }
-        
-        stage('Archive Artifacts') {
-            steps {
-                echo 'Archiving artifacts...'
-                archiveArtifacts artifacts: 'order-service/target/*.jar', fingerprint: true
-            }
-        }
+        // Las otras etapas (Tests, Docker, Deploy) se añadirán después de que esta funcione
     }
-    
+
     post {
         always {
-            echo 'Cleaning up workspace...'
-            cleanWs()
+            echo '🧹 Limpiando workspace (temporalmente deshabilitado para depuración)...'
+            // *** MUY IMPORTANTE: Comentado para que el log de depuración no se borre ***
+            // cleanWs()
         }
         success {
-            echo 'Pipeline completed successfully!'
+            echo '✅ Pipeline completado exitosamente (con build debug log).'
         }
         failure {
-            echo 'Pipeline failed!'
+            echo '❌ ¡La pipeline falló! Revisa el "maven-build-debug.log" en el workspace.'
         }
     }
-} 
+}
