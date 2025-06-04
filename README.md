@@ -35,7 +35,7 @@ http://localhost:8081
 **Jenkins:**
 - URL: http://localhost:8080
 -  Contraseña inicial: Se obtiene con:
-  ```bash
+```bash
   docker exec jenkins cat /var/jenkins_home/secrets/initialAdminPassword
   ```
 

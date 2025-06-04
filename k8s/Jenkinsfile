@@ -1,0 +1,139 @@
+pipeline {
+    agent any
+
+    environment {
+        KUBE_CONFIG = credentials('kubeconfig')
+        NAMESPACE = 'ecommerce'
+    }
+
+    stages {
+        stage('Checkout') {
+            steps {
+                checkout scm
+            }
+        }
+
+        stage('Verify Kubernetes Cluster') {
+            steps {
+                script {
+                    sh '''
+                        echo "Verificando acceso al cluster..."
+                        kubectl cluster-info
+                        kubectl get nodes
+                    '''
+                }
+            }
+        }
+
+        stage('Deploy Microservices') {
+            steps {
+                script {
+                    // Desplegar cada microservicio
+                    def services = [
+                        'api-gateway',
+                        'cloud-config',
+                        'service-discovery',
+                        'order-service',
+                        'product-service',
+                        'user-service'
+                    ]
+
+                    services.each { service ->
+                        echo "Desplegando ${service}..."
+                        sh """
+                            kubectl apply -f k8s/${service}-deployment.yaml -n ${NAMESPACE}
+                            kubectl apply -f k8s/${service}-service.yaml -n ${NAMESPACE}
+                        """
+                    }
+                }
+            }
+        }
+
+        stage('Verify Deployments') {
+            steps {
+                script {
+                    // Esperar a que los pods estén listos
+                    sh '''
+                        echo "Esperando a que los pods estén listos..."
+                        kubectl wait --for=condition=available --timeout=300s deployment/api-gateway -n ${NAMESPACE}
+                        kubectl wait --for=condition=available --timeout=300s deployment/cloud-config -n ${NAMESPACE}
+                        kubectl wait --for=condition=available --timeout=300s deployment/service-discovery -n ${NAMESPACE}
+                        kubectl wait --for=condition=available --timeout=300s deployment/order-service -n ${NAMESPACE}
+                        kubectl wait --for=condition=available --timeout=300s deployment/product-service -n ${NAMESPACE}
+                        kubectl wait --for=condition=available --timeout=300s deployment/user-service -n ${NAMESPACE}
+                    '''
+                }
+            }
+        }
+
+        stage('Health Check') {
+            steps {
+                script {
+                    // Verificar salud de los servicios
+                    def services = [
+                        ['api-gateway', '8080'],
+                        ['cloud-config', '8888'],
+                        ['service-discovery', '8761'],
+                        ['order-service', '8081'],
+                        ['product-service', '8082'],
+                        ['user-service', '8083']
+                    ]
+
+                    services.each { service ->
+                        def (name, port) = service
+                        echo "Verificando salud de ${name}..."
+                        sh """
+                            curl -f http://${name}:${port}/actuator/health || exit 1
+                        """
+                    }
+                }
+            }
+        }
+
+        stage('Verify Services') {
+            steps {
+                script {
+                    // Verificar que los servicios estén expuestos
+                    sh '''
+                        echo "Verificando servicios expuestos..."
+                        kubectl get services -n ${NAMESPACE}
+                        kubectl get pods -n ${NAMESPACE}
+                    '''
+                }
+            }
+        }
+    }
+
+    post {
+        always {
+            // Guardar logs de los pods
+            sh '''
+                echo "Guardando logs de los pods..."
+                mkdir -p k8s-logs
+                kubectl logs -l app=api-gateway -n ${NAMESPACE} > k8s-logs/api-gateway.log
+                kubectl logs -l app=cloud-config -n ${NAMESPACE} > k8s-logs/cloud-config.log
+                kubectl logs -l app=service-discovery -n ${NAMESPACE} > k8s-logs/service-discovery.log
+                kubectl logs -l app=order-service -n ${NAMESPACE} > k8s-logs/order-service.log
+                kubectl logs -l app=product-service -n ${NAMESPACE} > k8s-logs/product-service.log
+                kubectl logs -l app=user-service -n ${NAMESPACE} > k8s-logs/user-service.log
+            '''
+            archiveArtifacts artifacts: 'k8s-logs/**/*.log', allowEmptyArchive: true
+        }
+        success {
+            echo 'Despliegue completado exitosamente!'
+        }
+        failure {
+            echo 'El despliegue falló!'
+            // Intentar rollback
+            sh '''
+                echo "Intentando rollback..."
+                kubectl rollout undo deployment/api-gateway -n ${NAMESPACE}
+                kubectl rollout undo deployment/cloud-config -n ${NAMESPACE}
+                kubectl rollout undo deployment/service-discovery -n ${NAMESPACE}
+                kubectl rollout undo deployment/order-service -n ${NAMESPACE}
+                kubectl rollout undo deployment/product-service -n ${NAMESPACE}
+                kubectl rollout undo deployment/user-service -n ${NAMESPACE}
+            '''
+        }
+    }
+} 
