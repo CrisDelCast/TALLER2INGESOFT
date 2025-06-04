@@ -14,7 +14,7 @@ spec:
     spec:
       containers:
         - name: product-service
-          image: ecommerceacr.azurecr.io/product-service:v3
+          image: ecommerceacr.azurecr.io/product-service:v8
           ports:
             - containerPort: 8080
 ---

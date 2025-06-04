@@ -1,0 +1,111 @@
+pipeline {
+    agent any
+
+    environment {
+        MAVEN_OPTS = '-Dmaven.repo.local=.m2/repository'
+        SERVICE_NAME = 'order-service'
+        REGISTRY_URL = 'ecommerceacr.azurecr.io' // Tu registro ACR
+        // IMAGE_TAG se establecerá dinámicamente en la etapa de build
+        ACR_CREDENTIALS_ID = 'your-acr-jenkins-credentials-id' // ¡Cambia esto por el ID de tus credenciales de ACR en Jenkins!
+    }
+
+    stages {
+        stage('Checkout') {
+            steps {
+                echo 'Checking out code...'
+                checkout scm
+            }
+        }
+
+        stage('Build & Package') {
+            steps {
+                echo 'Building and packaging the service...'
+                dir("${SERVICE_NAME}") { // Asegúrate de que esta es la ruta correcta
+                    sh 'mvn clean package -DskipTests' // Compila y empaqueta en un solo paso
+                }
+            }
+        }
+
+        stage('Unit Tests') {
+            steps {
+                echo 'Running unit tests...'
+                dir("${SERVICE_NAME}") {
+                    sh 'mvn test'
+                }
+            }
+            post {
+                always {
+                    // Asegúrate de que la ruta al archivo .xml sea correcta
+                    publishTestResults testResultsPattern: "${SERVICE_NAME}/target/surefire-reports/*.xml"
+                }
+            }
+        }
+
+        stage('Build & Tag Docker Image') {
+            steps {
+                echo 'Building Docker image...'
+                script {
+                    // Usa el número de build de Jenkins como tag de la imagen
+                    env.IMAGE_TAG = "${env.BUILD_NUMBER}"
+                    def image = docker.build("${REGISTRY_URL}/${SERVICE_NAME}:${env.IMAGE_TAG}", "./${SERVICE_NAME}")
+                    echo "Docker image built: ${REGISTRY_URL}/${SERVICE_NAME}:${env.IMAGE_TAG}"
+                }
+            }
+        }
+
+        stage('Push Docker Image') {
+            steps {
+                echo 'Logging into Docker registry and pushing image...'
+                script {
+                    docker.withRegistry("https://${REGISTRY_URL}", ACR_CREDENTIALS_ID) {
+                        def image = docker.image("${REGISTRY_URL}/${SERVICE_NAME}:${env.IMAGE_TAG}")
+                        image.push()
+                        echo "Docker image pushed: ${REGISTRY_URL}/${SERVICE_NAME}:${env.IMAGE_TAG}"
+                    }
+                }
+            }
+        }
+
+        stage('Deploy to Kubernetes (Stage)') {
+            steps {
+                echo 'Deploying order-service to Kubernetes Stage environment...'
+                script {
+                    // Asegúrate de que tu agente de Jenkins tenga acceso a kubectl y el contexto correcto
+                    // Opcional: Aplicar los manifiestos la primera vez si no existen
+                    // sh "kubectl apply -f k8s/${SERVICE_NAME}-deployment.yaml -n default"
+                    // sh "kubectl apply -f k8s/${SERVICE_NAME}-service.yaml -n default"
+
+                    // Actualizar la imagen del despliegue existente
+                    // Asume que el nombre del contenedor dentro del Deployment es el mismo que SERVICE_NAME
+                    sh "kubectl set image deployment/${SERVICE_NAME} ${SERVICE_NAME}=${REGISTRY_URL}/${SERVICE_NAME}:${env.IMAGE_TAG} -n default"
+
+                    // Esperar a que el despliegue se complete
+                    sh "kubectl rollout status deployment/${SERVICE_NAME} -n default"
+
+                    echo "Deployment of ${SERVICE_NAME} with image ${REGISTRY_URL}/${SERVICE_NAME}:${env.IMAGE_TAG} complete."
+                }
+            }
+        }
+
+        stage('Archive Artifacts') {
+            steps {
+                echo 'Archiving artifacts...'
+                archiveArtifacts artifacts: "${SERVICE_NAME}/target/*.jar", fingerprint: true
+            }
+        }
+    }
+
+    post {
+        always {
+            echo 'Cleaning up workspace...'
+            cleanWs()
+        }
+        success {
+            echo 'Pipeline completed successfully!'
+        }
+        failure {
+            echo 'Pipeline failed!'
+            // Aquí podrías añadir notificaciones por correo, Slack, etc.
+        }
+    }
+}

@@ -40,6 +40,8 @@ eureka:
   client:
     service-url:
       defaultZone: http://service-discovery:8761/eureka/
+  instance: # <--- ¡AÑADE ESTA SECCIÓN!
+    hostname: order-service
 
 
 

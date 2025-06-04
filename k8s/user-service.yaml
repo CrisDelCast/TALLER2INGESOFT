@@ -15,7 +15,7 @@ spec:
     spec:
       containers:
         - name: user-service
-          image: ecommerceacr.azurecr.io/user-service:v3
+          image: ecommerceacr.azurecr.io/user-service:v8
           ports:
             - containerPort: 8700
 ---
