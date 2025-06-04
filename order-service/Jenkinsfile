@@ -20,7 +20,8 @@ pipeline {
         stage('Build & Package') {
             steps {
                 dir('order-service') {
-                    sh 'mvn clean package -X > maven-build-debug.log 2>&1' // ¡Asegúrate de que esta línea esté completa!
+                    // Ensure this line is EXACTLY as below, including the redirection
+                    sh 'mvn clean package -X > maven-build-debug.log 2>&1'
                 }
             }
         }
