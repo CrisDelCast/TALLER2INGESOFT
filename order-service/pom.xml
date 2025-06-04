@@ -67,7 +67,8 @@
 		<dependency>
 			<groupId>org.projectlombok</groupId>
 			<artifactId>lombok</artifactId>
-			<optional>true</optional>
+			<version>1.18.30</version> <!-- ✅ Asegúrate de que sea esta o superior -->
+    		<scope>provided</scope>
 		</dependency>
 		<dependency>
 			<groupId>org.testcontainers</groupId>
@@ -98,15 +99,12 @@
 		<plugins>
 			 
 			<plugin>
-				<groupId>org.springframework.boot</groupId>
-				<artifactId>spring-boot-maven-plugin</artifactId>
+				<groupId>org.apache.maven.plugins</groupId>
+				<artifactId>maven-compiler-plugin</artifactId>
+				<version>3.11.0</version> <!-- Usa al menos esta versión -->
 				<configuration>
-					<excludes>
-						<exclude>
-							<groupId>org.projectlombok</groupId>
-							<artifactId>lombok</artifactId>
-						</exclude>
-					</excludes>
+					<source>21</source>
+					<target>21</target>
 				</configuration>
 			</plugin>
 
