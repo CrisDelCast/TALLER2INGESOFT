@@ -1,45 +1,100 @@
-// TALLER2INGESOFT/Jenkinsfile
 pipeline {
     agent any
 
     environment {
+        MAVEN_OPTS = '-Dmaven.repo.local=.m2/repository'
         SERVICE_NAME = 'order-service'
-        MAVEN_OPTS = '-Dmaven.repo.local=.m2/repository' // Caché de Maven en el workspace
-        // ACR_CREDENTIALS_ID = 'your-acr-jenkins-credentials-id' // Comentado por ahora
-        // REGISTRY_URL = 'ecommerceacr.azurecr.io' // Comentado por ahora
+        REGISTRY_URL = 'ecommerceacr.azurecr.io'
+        ACR_CREDENTIALS_ID = 'your-acr-jenkins-credentials-id'
     }
 
     stages {
-        stage('1. Checkout SCM') {
+        stage('Checkout') {
             steps {
-                echo '📦 Clonando código fuente desde SCM...'
+                echo '📦 Clonando código fuente...'
                 checkout scm
             }
         }
 
-        stage('2. Build & Package (Debug)') {
+        stage('Build & Package') {
             steps {
-                echo "🔨 Compilando y empaquetando ${SERVICE_NAME} con Maven en modo debug..."
                 dir("${SERVICE_NAME}") {
-                    // IMPORTANTE: Redirección para capturar todo el log de Maven
+                    echo '🔨 Compilando el proyecto con Maven...'
                     sh 'mvn clean package -X > maven-build-debug.log 2>&1'
                 }
             }
         }
-        // Las otras etapas (Tests, Docker, Deploy) se añadirán después de que esta funcione
+
+        stage('Unit Tests') {
+            steps {
+                dir("${SERVICE_NAME}") {
+                    echo '🧪 Ejecutando pruebas unitarias...'
+                    sh 'mvn test'
+                }
+            }
+            post {
+                always {
+                    echo '📄 Publicando resultados de pruebas...'
+                    junit "${SERVICE_NAME}/target/surefire-reports/*.xml"
+                }
+            }
+        }
+
+        stage('Build & Tag Docker Image') {
+            steps {
+                echo '🐳 Construyendo imagen Docker...'
+                script {
+                    env.IMAGE_TAG = "${env.BUILD_NUMBER}"
+                    docker.build("${REGISTRY_URL}/${SERVICE_NAME}:${env.IMAGE_TAG}", "./${SERVICE_NAME}")
+                    echo "✅ Imagen construida: ${REGISTRY_URL}/${SERVICE_NAME}:${env.IMAGE_TAG}"
+                }
+            }
+        }
+
+        stage('Push Docker Image') {
+            steps {
+                echo '🚀 Subiendo imagen a ACR...'
+                script {
+                    docker.withRegistry("https://${REGISTRY_URL}", ACR_CREDENTIALS_ID) {
+                        def image = docker.image("${REGISTRY_URL}/${SERVICE_NAME}:${env.IMAGE_TAG}")
+                        image.push()
+                        echo "✅ Imagen enviada: ${REGISTRY_URL}/${SERVICE_NAME}:${env.IMAGE_TAG}"
+                    }
+                }
+            }
+        }
+
+        stage('Deploy to Kubernetes (Stage)') {
+            steps {
+                echo '🚢 Desplegando en Kubernetes...'
+                script {
+                    sh """
+                        kubectl set image deployment/${SERVICE_NAME} ${SERVICE_NAME}=${REGISTRY_URL}/${SERVICE_NAME}:${env.IMAGE_TAG} -n default
+                        kubectl rollout status deployment/${SERVICE_NAME} -n default
+                    """
+                    echo "✅ Despliegue completado para ${SERVICE_NAME} con la imagen ${env.IMAGE_TAG}"
+                }
+            }
+        }
+
+        stage('Archive Artifacts') {
+            steps {
+                echo '📦 Archivando artefactos...'
+                archiveArtifacts artifacts: "${SERVICE_NAME}/target/*.jar", fingerprint: true
+            }
+        }
     }
 
     post {
         always {
-            echo '🧹 Limpiando workspace (temporalmente deshabilitado para depuración)...'
-            // *** MUY IMPORTANTE: Comentado para que el log de depuración no se borre ***
+            echo '🧹 Limpiando workspace...'
             // cleanWs()
         }
         success {
-            echo '✅ Pipeline completado exitosamente (con build debug log).'
+            echo '✅ ¡Pipeline completada con éxito!'
         }
         failure {
-            echo '❌ ¡La pipeline falló! Revisa el "maven-build-debug.log" en el workspace.'
+            echo '❌ ¡La pipeline falló!'
         }
     }
 }
