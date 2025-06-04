@@ -2,59 +2,67 @@ pipeline {
     agent any
 
     environment {
+        // Asegúrate de que este MAVEN_OPTS sea adecuado para tu repositorio local
         MAVEN_OPTS = '-Dmaven.repo.local=.m2/repository'
-        SERVICE_NAME = 'order-service'
-        REGISTRY_URL = 'ecommerceacr.azurecr.io'
-        ACR_CREDENTIALS_ID = 'your-acr-jenkins-credentials-id'
+        SERVICE_NAME = 'order-service' // Asegúrate de que esto coincide con el nombre de tu microservicio
+        REGISTRY_URL = 'ecommerceacr.azurecr.io' // ¡CAMBIA ESTO A LA URL COMPLETA DE TU ACR! (ej. miacrdemo.azurecr.io)
+        ACR_CREDENTIALS_ID = 'your-acr-jenkins-credentials-id' // ¡CAMBIA ESTO A 'acr-credentials' o el ID exacto que le diste en Jenkins!
     }
 
     stages {
-        stage('Checkout') {
+        stage('1. Checkout SCM') {
             steps {
                 echo '📦 Clonando código fuente...'
-                checkout scm
+                checkout scm // Esto utiliza la configuración de SCM del Job de Jenkins
             }
         }
 
-        stage('Build & Package') {
+        stage('2. Build & Package') {
             steps {
                 dir("${SERVICE_NAME}") {
-                    echo '🔨 Compilando el proyecto con Maven...'
-                    sh 'mvn clean package -X > maven-build-debug.log 2>&1'
+                    echo '🔨 Compilando y empaquetando el proyecto con Maven...'
+                    // No uses -X en producción; es para depuración. Lo dejo comentado para que lo uses si lo necesitas.
+                    // sh 'mvn clean package -X > maven-build-debug.log 2>&1'
+                    sh 'mvn clean package -DskipTests' // Agregamos -DskipTests aquí para evitar ejecutar tests dos veces o si no hay tests
                 }
             }
         }
 
-        stage('Unit Tests') {
+        stage('3. Unit Tests') {
             steps {
                 dir("${SERVICE_NAME}") {
                     echo '🧪 Ejecutando pruebas unitarias...'
-                    sh 'mvn test'
+                    sh 'mvn test' // Esta etapa SÍ ejecuta las pruebas
                 }
             }
             post {
                 always {
+                    // Esta sección se ejecuta SIEMPRE después de la etapa 'Unit Tests'
+                    // Publica los resultados de los tests
                     echo '📄 Publicando resultados de pruebas...'
+                    // Asegúrate de que esta ruta sea correcta y que tus tests generen informes XML aquí
                     junit "${SERVICE_NAME}/target/surefire-reports/*.xml"
                 }
             }
         }
 
-        stage('Build & Tag Docker Image') {
+        stage('4. Build & Tag Docker Image') {
             steps {
                 echo '🐳 Construyendo imagen Docker...'
                 script {
-                    env.IMAGE_TAG = "${env.BUILD_NUMBER}"
+                    env.IMAGE_TAG = "${env.BUILD_NUMBER}" // Usa el número de build de Jenkins como tag
+                    // Asegúrate de que el Dockerfile del microservicio está en la misma carpeta que su pom.xml
                     docker.build("${REGISTRY_URL}/${SERVICE_NAME}:${env.IMAGE_TAG}", "./${SERVICE_NAME}")
                     echo "✅ Imagen construida: ${REGISTRY_URL}/${SERVICE_NAME}:${env.IMAGE_TAG}"
                 }
             }
         }
 
-        stage('Push Docker Image') {
+        stage('5. Push Docker Image to ACR') {
             steps {
-                echo '🚀 Subiendo imagen a ACR...'
+                echo '⬆️ Subiendo imagen a ACR...'
                 script {
+                    // Utiliza el plugin de Docker para autenticación y push, es más seguro y sencillo
                     docker.withRegistry("https://${REGISTRY_URL}", ACR_CREDENTIALS_ID) {
                         def image = docker.image("${REGISTRY_URL}/${SERVICE_NAME}:${env.IMAGE_TAG}")
                         image.push()
@@ -64,10 +72,12 @@ pipeline {
             }
         }
 
-        stage('Deploy to Kubernetes (Stage)') {
+        stage('6. Deploy to Kubernetes') {
             steps {
                 echo '🚢 Desplegando en Kubernetes...'
                 script {
+                    // Asegúrate de que kubectl está configurado para acceder a tu clúster AKS
+                    // Esto usualmente implica montar tu archivo ~/.kube/config en el contenedor Jenkins
                     sh """
                         kubectl set image deployment/${SERVICE_NAME} ${SERVICE_NAME}=${REGISTRY_URL}/${SERVICE_NAME}:${env.IMAGE_TAG} -n default
                         kubectl rollout status deployment/${SERVICE_NAME} -n default
@@ -77,9 +87,10 @@ pipeline {
             }
         }
 
-        stage('Archive Artifacts') {
+        stage('7. Archive Artifacts') {
             steps {
                 echo '📦 Archivando artefactos...'
+                // Archiva el JAR generado por Maven
                 archiveArtifacts artifacts: "${SERVICE_NAME}/target/*.jar", fingerprint: true
             }
         }
@@ -88,7 +99,7 @@ pipeline {
     post {
         always {
             echo '🧹 Limpiando workspace...'
-            // cleanWs()
+            cleanWs() // Descomentado para limpiar el espacio de trabajo después de cada build
         }
         success {
             echo '✅ ¡Pipeline completada con éxito!'
