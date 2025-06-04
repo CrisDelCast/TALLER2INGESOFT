@@ -19,9 +19,8 @@ pipeline {
 
         stage('Build & Package') {
             steps {
-                echo 'Building and packaging the service...'
-                dir("${SERVICE_NAME}") { // Asegúrate de que esta es la ruta correcta
-                    sh 'mvn clean package -DskipTests' // Compila y empaqueta en un solo paso
+                dir('order-service') {
+                    sh 'mvn clean package -X > maven-build-debug.log 2>&1' // Añadir -X y redireccionar
                 }
             }
         }
