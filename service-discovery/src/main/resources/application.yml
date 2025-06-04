@@ -1,0 +1,55 @@
+
+spring:
+  zipkin:
+    base-url: ${SPRING_ZIPKIN_BASE_URL:http://localhost:9411/}
+  application:
+    name: SERVICE-DISCOVERY
+  profiles:
+    active:
+    - dev
+
+resilience4j:
+  circuitbreaker:
+    instances:
+      serviceDiscovery:
+        register-health-indicator: true
+        event-consumer-buffer-size: 10
+        automatic-transition-from-open-to-half-open-enabled: true
+        failure-rate-threshold: 50
+        minimum-number-of-calls: 5
+        permitted-number-of-calls-in-half-open-state: 3
+        sliding-window-size: 10
+        wait-duration-in-open-state: 5s
+        sliding-window-type: COUNT_BASED
+
+management:
+  health:
+    circuitbreakers:
+      enabled: true
+  endpoint:
+    health:
+      show-details: always
+
+
+
+eureka:
+  server:
+    # Deshabilita el modo de auto-preservación para que Eureka expire instancias
+    # que no envían latidos, incluso si la tasa de renovación es baja.
+    # ¡Cuidado en redes inestables!
+    enable-self-preservation: false
+    # Frecuencia con la que Eureka verifica y expulsa instancias caídas.
+    # Por defecto es 60000ms (1 minuto). Un valor más bajo (ej. 10s) ayuda a limpiar más rápido.
+    eviction-interval-timer-in-ms: 10000 # 10 segundos
+  client:
+    # Asegúrate de que el cliente Eureka (el propio Service Discovery)
+    # no se registre a sí mismo si no es necesario, o que lo haga correctamente.
+    # Si este es solo el servidor, no necesita registrarse.
+    register-with-eureka: false
+    fetch-registry: false
+    service-url:
+      defaultZone: http://localhost:8761/eureka/ # URL del propio servidor Eureka
+
+
+
+
