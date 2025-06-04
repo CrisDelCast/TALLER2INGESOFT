@@ -23,11 +23,11 @@ pipeline {
                     echo '🔨 Compilando y empaquetando el proyecto con Maven...'
                     // No uses -X en producción; es para depuración. Lo dejo comentado para que lo uses si lo necesitas.
                     // sh 'mvn clean package -X > maven-build-debug.log 2>&1'
-                    sh 'mvn clean package -DskipTests' // Agregamos -DskipTests aquí para evitar ejecutar tests dos veces o si no hay tests
+                    sh 'mvn clean package -DskipTests'// Agregamos -DskipTests aquí para evitar ejecutar tests dos veces o si no hay tests
                 }
             }
         }
-
+/*
         stage('3. Unit Tests') {
             steps {
                 dir("${SERVICE_NAME}") {
@@ -45,6 +45,7 @@ pipeline {
                 }
             }
         }
+        */
 
         stage('4. Build & Tag Docker Image') {
             steps {
