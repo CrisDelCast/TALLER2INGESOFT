@@ -177,6 +177,23 @@ variable "object_id" {
   type        = string
 }
 
+# Monitoring variables
+variable "log_retention_days" {
+  description = "Number of days to retain logs"
+  type        = number
+  default     = 30
+}
+
+variable "subscription_id" {
+  description = "Azure subscription ID"
+  type        = string
+}
+
+variable "alert_email" {
+  description = "Email address for alerts"
+  type        = string
+}
+
 variable "tags" {
   description = "Tags to apply to all resources"
   type        = map(string)

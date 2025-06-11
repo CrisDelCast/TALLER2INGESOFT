@@ -54,7 +54,7 @@ module "kubernetes" {
   resource_group_name = azurerm_resource_group.rg.name
   subnet_id          = module.networking.aks_subnet_id
   vnet_id            = module.networking.vnet_id
-  log_analytics_workspace_id = azurerm_log_analytics_workspace.law.id
+  log_analytics_workspace_id = module.monitoring.log_analytics_workspace_id
   
   kubernetes_version = var.kubernetes_version
   node_count         = var.node_count
@@ -101,5 +101,21 @@ module "database" {
   tenant_id = var.tenant_id
   object_id = var.object_id
 
+  tags = var.tags
+}
+
+# Monitoring
+module "monitoring" {
+  source = "../../modules/monitoring"
+
+  environment        = var.environment
+  location           = var.location
+  resource_group_name = azurerm_resource_group.rg.name
+  
+  log_retention_days = var.log_retention_days
+  subscription_id    = var.subscription_id
+  aks_cluster_id     = module.kubernetes.cluster_id
+  alert_email        = var.alert_email
+  
   tags = var.tags
 } 
