@@ -1,94 +1,19 @@
 variable "environment" {
-  description = "Environment name"
+  description = "Environment name (dev/stage/prod)"
   type        = string
-  default     = "dev"
 }
 
 variable "location" {
   description = "Azure region"
   type        = string
-  default     = "eastus"
 }
 
-variable "storage_account_suffix" {
-  description = "Suffix for the storage account name"
+variable "resource_group_name" {
+  description = "Name of the resource group"
   type        = string
 }
 
-variable "address_space" {
-  description = "Address space for the virtual network"
-  type        = list(string)
-  default     = ["10.0.0.0/16"]
-}
-
-variable "aks_subnet_prefix" {
-  description = "Address prefix for AKS subnet"
-  type        = list(string)
-  default     = ["10.0.1.0/24"]
-}
-
-variable "app_gateway_subnet_prefix" {
-  description = "Address prefix for Application Gateway subnet"
-  type        = list(string)
-  default     = ["10.0.2.0/24"]
-}
-
-# Kubernetes variables
-variable "kubernetes_version" {
-  description = "Kubernetes version"
-  type        = string
-  default     = "1.26.3"
-}
-
-variable "node_count" {
-  description = "Number of nodes in the default node pool"
-  type        = number
-  default     = 2
-}
-
-variable "vm_size" {
-  description = "Size of the VM for the nodes"
-  type        = string
-  default     = "Standard_D2s_v3"
-}
-
-variable "enable_auto_scaling" {
-  description = "Enable auto scaling for the default node pool"
-  type        = bool
-  default     = true
-}
-
-variable "min_count" {
-  description = "Minimum number of nodes for auto scaling"
-  type        = number
-  default     = 1
-}
-
-variable "max_count" {
-  description = "Maximum number of nodes for auto scaling"
-  type        = number
-  default     = 3
-}
-
-variable "service_cidr" {
-  description = "CIDR for Kubernetes services"
-  type        = string
-  default     = "10.0.0.0/16"
-}
-
-variable "dns_service_ip" {
-  description = "IP address for Kubernetes DNS service"
-  type        = string
-  default     = "10.0.0.10"
-}
-
-variable "docker_bridge_cidr" {
-  description = "CIDR for Docker bridge"
-  type        = string
-  default     = "172.17.0.1/16"
-}
-
-# Database variables
+# PostgreSQL variables
 variable "postgres_sku_name" {
   description = "SKU name for PostgreSQL server"
   type        = string
@@ -137,6 +62,7 @@ variable "postgres_database_name" {
   default     = "ecommerce"
 }
 
+# Redis variables
 variable "redis_capacity" {
   description = "Capacity of Redis cache"
   type        = number
@@ -155,18 +81,18 @@ variable "redis_sku_name" {
   default     = "Standard"
 }
 
+# Network variables
 variable "aks_subnet_start_ip" {
   description = "Start IP address for AKS subnet"
   type        = string
-  default     = "10.0.1.0"
 }
 
 variable "aks_subnet_end_ip" {
   description = "End IP address for AKS subnet"
   type        = string
-  default     = "10.0.1.255"
 }
 
+# Key Vault variables
 variable "tenant_id" {
   description = "Azure AD tenant ID"
   type        = string
@@ -180,8 +106,5 @@ variable "object_id" {
 variable "tags" {
   description = "Tags to apply to all resources"
   type        = map(string)
-  default     = {
-    Environment = "dev"
-    Project     = "ecommerce"
-  }
+  default     = {}
 } 

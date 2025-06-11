@@ -68,4 +68,38 @@ module "kubernetes" {
   docker_bridge_cidr = var.docker_bridge_cidr
   
   tags = var.tags
+}
+
+# Database
+module "database" {
+  source = "../../modules/database"
+
+  environment        = var.environment
+  location           = var.location
+  resource_group_name = azurerm_resource_group.rg.name
+
+  # PostgreSQL configuration
+  postgres_sku_name            = var.postgres_sku_name
+  postgres_storage_mb          = var.postgres_storage_mb
+  postgres_backup_retention_days = var.postgres_backup_retention_days
+  postgres_geo_redundant_backup = var.postgres_geo_redundant_backup
+  postgres_admin_username      = var.postgres_admin_username
+  postgres_admin_password      = var.postgres_admin_password
+  postgres_version            = var.postgres_version
+  postgres_database_name      = var.postgres_database_name
+
+  # Redis configuration
+  redis_capacity = var.redis_capacity
+  redis_family   = var.redis_family
+  redis_sku_name = var.redis_sku_name
+
+  # Network configuration
+  aks_subnet_start_ip = var.aks_subnet_start_ip
+  aks_subnet_end_ip   = var.aks_subnet_end_ip
+
+  # Key Vault configuration
+  tenant_id = var.tenant_id
+  object_id = var.object_id
+
+  tags = var.tags
 } 
