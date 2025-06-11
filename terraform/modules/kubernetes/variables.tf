@@ -1,39 +1,18 @@
 variable "environment" {
-  description = "Environment name"
+  description = "Environment name (dev/stage/prod)"
   type        = string
-  default     = "dev"
 }
 
 variable "location" {
   description = "Azure region"
   type        = string
-  default     = "eastus"
 }
 
-variable "storage_account_suffix" {
-  description = "Suffix for the storage account name"
+variable "resource_group_name" {
+  description = "Name of the resource group"
   type        = string
 }
 
-variable "address_space" {
-  description = "Address space for the virtual network"
-  type        = list(string)
-  default     = ["10.0.0.0/16"]
-}
-
-variable "aks_subnet_prefix" {
-  description = "Address prefix for AKS subnet"
-  type        = list(string)
-  default     = ["10.0.1.0/24"]
-}
-
-variable "app_gateway_subnet_prefix" {
-  description = "Address prefix for Application Gateway subnet"
-  type        = list(string)
-  default     = ["10.0.2.0/24"]
-}
-
-# Kubernetes variables
 variable "kubernetes_version" {
   description = "Kubernetes version"
   type        = string
@@ -50,6 +29,11 @@ variable "vm_size" {
   description = "Size of the VM for the nodes"
   type        = string
   default     = "Standard_D2s_v3"
+}
+
+variable "subnet_id" {
+  description = "ID of the subnet where the nodes will be deployed"
+  type        = string
 }
 
 variable "enable_auto_scaling" {
@@ -88,11 +72,18 @@ variable "docker_bridge_cidr" {
   default     = "172.17.0.1/16"
 }
 
+variable "log_analytics_workspace_id" {
+  description = "ID of the Log Analytics workspace"
+  type        = string
+}
+
+variable "vnet_id" {
+  description = "ID of the virtual network"
+  type        = string
+}
+
 variable "tags" {
   description = "Tags to apply to all resources"
   type        = map(string)
-  default     = {
-    Environment = "dev"
-    Project     = "ecommerce"
-  }
+  default     = {}
 } 
