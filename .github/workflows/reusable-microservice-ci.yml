@@ -69,6 +69,7 @@ jobs:
           -Dsonar.projectName=${{ inputs.service_name }}
           -Dsonar.sources=${{ inputs.service_path }}
           -Dsonar.projectBaseDir=.
+          -Dsonar.java.binaries=${{ inputs.service_path }}/target/classes
 
     - name: Login to Azure
       uses: azure/login@v1
