@@ -27,6 +27,10 @@ on:
         required: true
       AZURE_CLIENT_SECRET:
         required: true
+      SONAR_ORGANIZATION:
+        required: true
+      SONAR_TOKEN:
+        required: true
 
 jobs:
   build_and_deploy:
@@ -48,6 +52,19 @@ jobs:
     - name: Build with Maven
       run: mvn clean package -DskipTests
       working-directory: ${{ inputs.service_path }}
+
+    - name: SonarCloud Scan
+      uses: SonarSource/sonarcloud-github-action@master
+      env:
+        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}  # Needed to get PR information, if any
+        SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
+      with:
+        # SonarCloud necesita saber el nombre del proyecto y la organización.
+        # Usamos el nombre del servicio como nombre del proyecto.
+        args: >
+          -Dsonar.organization=${{ secrets.SONAR_ORGANIZATION }}
+          -Dsonar.projectKey=${{ inputs.service_name }}
+          -Dsonar.sources=${{ inputs.service_path }}
 
     - name: Login to Azure
       uses: azure/login@v1
