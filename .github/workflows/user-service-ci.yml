@@ -1,0 +1,25 @@
+name: User Service CI
+
+on:
+  push:
+    branches:
+      - main
+    paths:
+      - 'user-service/**'
+      - '.github/workflows/user-service-ci.yml'
+      - '.github/workflows/reusable-microservice-ci.yml'
+
+jobs:
+  call_reusable_workflow:
+    name: Build & Deploy User Service
+    uses: ./.github/workflows/reusable-microservice-ci.yml
+    with:
+      service_name: user-service
+      service_path: ./user-service
+    secrets:
+      ACR_NAME: ${{ vars.ACR_NAME }}
+      AKS_CLUSTER_NAME: ${{ vars.AKS_CLUSTER_NAME }}
+      AKS_RESOURCE_GROUP: ${{ vars.AKS_RESOURCE_GROUP }}
+      AZURE_CREDENTIALS: ${{ secrets.AZURE_CREDENTIALS }}
+      AZURE_CLIENT_ID: ${{ secrets.AZURE_CLIENT_ID }}
+      AZURE_CLIENT_SECRET: ${{ secrets.AZURE_CLIENT_SECRET }} 
