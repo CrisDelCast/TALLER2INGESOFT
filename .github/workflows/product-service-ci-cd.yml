@@ -82,9 +82,9 @@ jobs:
     #     La forma más simple de actualizar la imagen es con `kubectl set image`.
     - name: Deploy to AKS
       run: |
-        kubectl set image deployment/product-service-deployment product-service=${{ env.ACR_NAME }}.azurecr.io/${{ env.IMAGE_NAME }}:${{ github.sha }} -n default
+        kubectl set image deployment/product-service product-service=${{ env.ACR_NAME }}.azurecr.io/${{ env.IMAGE_NAME }}:${{ github.sha }} -n default
     
     # 9. VERIFY DEPLOYMENT: Revisa que el despliegue se haya completado exitosamente.
     - name: Verify deployment
       run: |
-        kubectl rollout status deployment/product-service-deployment -n default 
+        kubectl rollout status deployment/product-service -n default 
