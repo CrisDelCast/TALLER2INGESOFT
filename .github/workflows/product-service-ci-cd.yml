@@ -17,9 +17,9 @@ on:
 
 # Variables de entorno disponibles para todos los jobs
 env:
-  ACR_NAME: tu-acr-name             # <-- REEMPLAZA con el nombre de tu ACR
-  AKS_CLUSTER_NAME: tu-aks-name     # <-- REEMPLAZA con el nombre de tu clúster AKS
-  AKS_RESOURCE_GROUP: tu-rg-name    # <-- REEMPLAZA con el Resource Group de tu AKS
+  ACR_NAME: ecommerceacr             # <-- REEMPLAZA con el nombre de tu ACR
+  AKS_CLUSTER_NAME: ecommerceaks     # <-- REEMPLAZA con el nombre de tu clúster AKS
+  AKS_RESOURCE_GROUP: ecommerce-rg    # <-- REEMPLAZA con el Resource Group de tu AKS
   IMAGE_NAME: product-service
 
 jobs:
