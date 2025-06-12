@@ -8,6 +8,7 @@ on:
       - main
     paths:
       - 'product-service/**'
+      - '.github/workflows/product-service-ci-cd.yml'
   pull_request:
     branches:
       - main
@@ -16,14 +17,14 @@ on:
 
 # Variables de entorno disponibles para todos los jobs
 env:
-  ACR_NAME: ecommerceacr            
-  AKS_CLUSTER_NAME: ecommerceaks    
-  AKS_RESOURCE_GROUP: ecommerce-rg
-  IMAGE_NAME: product-service    
+  ACR_NAME: tu-acr-name             # <-- REEMPLAZA con el nombre de tu ACR
+  AKS_CLUSTER_NAME: tu-aks-name     # <-- REEMPLAZA con el nombre de tu clúster AKS
+  AKS_RESOURCE_GROUP: tu-rg-name    # <-- REEMPLAZA con el Resource Group de tu AKS
+  IMAGE_NAME: product-service
 
 jobs:
-  build_and_push_image:
-    name: Build & Push Docker Image
+  build_and_deploy:
+    name: Build, Push and Deploy
     runs-on: ubuntu-latest
     
     steps:
@@ -56,47 +57,26 @@ jobs:
     #    Usa el GitHub SHA (identificador único del commit) como etiqueta para la imagen.
     #    Esto asegura que cada push tenga una imagen única.
     - name: Build and push Docker image to ACR
-      uses: azure/docker-login@v1
-      with:
-        login-server: ${{ env.ACR_NAME }}.azurecr.io
-        username: ${{ secrets.ACR_USERNAME }} # Secreto que debes crear en GitHub
-        password: ${{ secrets.ACR_PASSWORD }} # Secreto que debes crear en GitHub
-        
-    - run: |
-        docker build ./product-service -t ${{ env.ACR_NAME }}.azurecr.io/${{ env.IMAGE_NAME }}:${{ github.sha }}
+      run: |
+        docker build -t ${{ env.ACR_NAME }}.azurecr.io/${{ env.IMAGE_NAME }}:${{ github.sha }} .
         docker push ${{ env.ACR_NAME }}.azurecr.io/${{ env.IMAGE_NAME }}:${{ github.sha }}
+      working-directory: ./product-service
       
-  deploy_to_aks:
-    name: Deploy to AKS
-    needs: build_and_push_image # Este job depende del anterior. No se ejecuta si el build falla.
-    runs-on: ubuntu-latest
-
-    steps:
-    # 7. CHECKOUT: Clona el repositorio de nuevo para tener acceso a los manifiestos de k8s.
-    - name: Checkout repository
-      uses: actions/checkout@v3
-
-    # 8. AZURE LOGIN: Se autentica en Azure de nuevo.
-    - name: Login to Azure
-      uses: azure/login@v1
-      with:
-        creds: ${{ secrets.AZURE_CREDENTIALS }}
-
-    # 9. SET AKS CONTEXT: Configura kubectl para que apunte a tu clúster de AKS.
+    # 7. SET AKS CONTEXT: Configura kubectl para que apunte a tu clúster de AKS.
     - name: Set AKS context
       uses: azure/aks-set-context@v3
       with:
         resource-group: ${{ env.AKS_RESOURCE_GROUP }}
         cluster-name: ${{ env.AKS_CLUSTER_NAME }}
 
-    # 10. DEPLOY: Usa kubectl para aplicar el manifiesto.
+    # 8. DEPLOY: Usa kubectl para aplicar el manifiesto.
     #     OJO: Este es el paso que iremos mejorando. Por ahora, asumimos que tienes un manifiesto base.
     #     La forma más simple de actualizar la imagen es con `kubectl set image`.
     - name: Deploy to AKS
       run: |
         kubectl set image deployment/product-service-deployment product-service=${{ env.ACR_NAME }}.azurecr.io/${{ env.IMAGE_NAME }}:${{ github.sha }} -n default
     
-    # 11. VERIFY DEPLOYMENT: Revisa que el despliegue se haya completado exitosamente.
+    # 9. VERIFY DEPLOYMENT: Revisa que el despliegue se haya completado exitosamente.
     - name: Verify deployment
       run: |
         kubectl rollout status deployment/product-service-deployment -n default 
