@@ -24,5 +24,4 @@ jobs:
       AZURE_CLIENT_ID: ${{ secrets.AZURE_CLIENT_ID }}
       AZURE_CLIENT_SECRET: ${{ secrets.AZURE_CLIENT_SECRET }}
       SONAR_ORGANIZATION: ${{ vars.SONAR_ORGANIZATION }}
-      SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
-      GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }} 
+      SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }} 

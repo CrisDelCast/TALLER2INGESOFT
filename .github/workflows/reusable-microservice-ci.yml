@@ -27,11 +27,9 @@ on:
         required: true
       AZURE_CLIENT_SECRET:
         required: true
-      GITHUB_TOKEN:
+      SONAR_ORGANIZATION:
         required: true
       SONAR_TOKEN:
-        required: true
-      SONAR_ORGANIZATION:
         required: true
 
 jobs:
