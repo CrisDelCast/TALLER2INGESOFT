@@ -54,6 +54,7 @@ public final class Favourite extends AbstractMappedEntity implements Serializabl
 	@DateTimeFormat(pattern = AppConstant.LOCAL_DATE_TIME_FORMAT)
 	private LocalDateTime likeDate;
 	
+	
 }
 
 
