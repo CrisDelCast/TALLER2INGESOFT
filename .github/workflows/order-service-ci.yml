@@ -1,0 +1,28 @@
+name: Order Service CI
+
+on:
+  push:
+    branches:
+      - main
+    paths:
+      - 'order-service/**'
+      - '.github/workflows/order-service-ci.yml'
+      - '.github/workflows/reusable-microservice-ci.yml'
+
+jobs:
+  call_reusable_workflow:
+    name: Build & Deploy Order Service
+    uses: ./.github/workflows/reusable-microservice-ci.yml
+    with:
+      service_name: order-service
+      service_path: ./order-service
+    secrets:
+      ACR_NAME: ${{ vars.ACR_NAME }}
+      AKS_CLUSTER_NAME: ${{ vars.AKS_CLUSTER_NAME }}
+      AKS_RESOURCE_GROUP: ${{ vars.AKS_RESOURCE_GROUP }}
+      AZURE_CREDENTIALS: ${{ secrets.AZURE_CREDENTIALS }}
+      AZURE_CLIENT_ID: ${{ secrets.AZURE_CLIENT_ID }}
+      AZURE_CLIENT_SECRET: ${{ secrets.AZURE_CLIENT_SECRET }}
+      SONAR_ORGANIZATION: ${{ vars.SONAR_ORGANIZATION }}
+      SONAR_PROJECT_KEY: ${{ vars.SONAR_PROJECT_KEY }}
+      SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }} 

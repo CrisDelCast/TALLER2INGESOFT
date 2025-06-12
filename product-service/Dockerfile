@@ -1,16 +1,16 @@
-# Etapa de construcción
-FROM maven:3.9.6-eclipse-temurin-17 AS builder
-WORKDIR /build
-COPY . .
-RUN mvn clean package -DskipTests
+# Usa una imagen base de Java 11, que es la que usa tu proyecto.
+FROM eclipse-temurin:11-jre
 
-# Etapa de ejecución
-FROM openjdk:11
-ARG PROJECT_VERSION=0.1.0
-ENV SPRING_PROFILES_ACTIVE=dev
-RUN mkdir -p /home/app
-WORKDIR /home/app
-COPY --from=builder /build/product-service/target/product-service-v${PROJECT_VERSION}.jar product-service.jar
+# Establece el directorio de trabajo dentro del contenedor.
+WORKDIR /app
+
+# Copia el archivo .jar que fue construido por Maven en el pipeline de GitHub Actions.
+# Lo copiamos desde la carpeta 'target' del microservicio al directorio raíz de la imagen.
+COPY target/*.jar app.jar
+
+# Expone el puerto en el que la aplicación se ejecuta.
 EXPOSE 8500
-ENTRYPOINT ["java", "-Dspring.profiles.active=${SPRING_PROFILES_ACTIVE}", "-jar", "product-service.jar"]
+
+# El comando que se ejecuta cuando el contenedor arranca.
+ENTRYPOINT ["java", "-jar", "app.jar"]
 
