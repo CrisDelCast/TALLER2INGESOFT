@@ -91,6 +91,32 @@ pipeline {
                 }
             }
         }
+
+        stage('Generate Release Notes') {
+            steps {
+                script {
+                    // Obtener el tag actual y el anterior
+                    def currentTag = sh(script: 'git describe --tags --abbrev=0', returnStdout: true).trim()
+                    def previousTag = sh(script: 'git describe --tags --abbrev=0 ${currentTag}^', returnStdout: true).trim()
+                    
+                    // Generar release notes
+                    powershell '''
+                        .\\scripts\\generate-release-notes.ps1 -Version ${currentTag} -PreviousTag ${previousTag}
+                    '''
+                    
+                    // Publicar release notes como artefacto
+                    publishHTML([
+                        allowMissing: true,
+                        alwaysLinkToLastBuild: true,
+                        keepAll: true,
+                        reportDir: '.',
+                        reportFiles: "release_notes_${currentTag}.md",
+                        reportName: 'Release Notes',
+                        reportTitles: "Release Notes ${currentTag}"
+                    ])
+                }
+            }
+        }
     }
 
     post {
