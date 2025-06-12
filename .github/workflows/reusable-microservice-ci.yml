@@ -88,6 +88,22 @@ jobs:
     - name: Build and push Docker image to ACR
       run: |
         docker build -t ${{ secrets.ACR_NAME }}.azurecr.io/${{ inputs.service_name }}:${{ github.sha }} .
+        # Subimos la imagen DESPUÉS del escaneo de Trivy.
+        # docker push ${{ secrets.ACR_NAME }}.azurecr.io/${{ inputs.service_name }}:${{ github.sha }}
+      working-directory: ${{ inputs.service_path }}
+
+    - name: Scan Docker image with Trivy
+      uses: aquasecurity/trivy-action@master
+      with:
+        image-ref: '${{ secrets.ACR_NAME }}.azurecr.io/${{ inputs.service_name }}:${{ github.sha }}'
+        format: 'table'
+        exit-code: '1'
+        ignore-unfixed: true
+        vuln-type: 'os,library'
+        severity: 'CRITICAL,HIGH'
+
+    - name: Push Docker image if scan passed
+      run: |
         docker push ${{ secrets.ACR_NAME }}.azurecr.io/${{ inputs.service_name }}:${{ github.sha }}
       working-directory: ${{ inputs.service_path }}
       
