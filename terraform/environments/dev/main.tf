@@ -8,7 +8,7 @@ terraform {
 
   backend "azurerm" {
     resource_group_name  = "terraform-state-rg"
-    storage_account_name = "tfstate${var.storage_account_suffix}"
+    storage_account_name = "tfstate${random_string.suffix.result}"
     container_name       = "tfstate"
     key                  = "dev.terraform.tfstate"
   }
@@ -16,6 +16,14 @@ terraform {
 
 provider "azurerm" {
   features {}
+}
+
+module "base" {
+  source = "../../modules/base"
+
+  environment = "dev"
+  location    = var.location
+  tags        = var.tags
 }
 
 # Resource Group

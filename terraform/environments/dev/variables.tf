@@ -5,7 +5,7 @@ variable "environment" {
 }
 
 variable "location" {
-  description = "Azure region"
+  description = "Región de Azure donde se desplegarán los recursos"
   type        = string
   default     = "eastus"
 }
@@ -195,10 +195,11 @@ variable "alert_email" {
 }
 
 variable "tags" {
-  description = "Tags to apply to all resources"
+  description = "Tags para los recursos"
   type        = map(string)
-  default     = {
-    Environment = "dev"
-    Project     = "ecommerce"
+  default = {
+    Environment = "Development"
+    Project     = "Ecommerce"
+    ManagedBy   = "Terraform"
   }
 } 
