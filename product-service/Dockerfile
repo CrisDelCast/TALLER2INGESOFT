@@ -1,5 +1,5 @@
 # Usa una imagen base de Java 11, que es la que usa tu proyecto.
-FROM openjdk:11-jre-slim
+FROM eclipse-temurin:11-jre
 
 # Establece el directorio de trabajo dentro del contenedor.
 WORKDIR /app
