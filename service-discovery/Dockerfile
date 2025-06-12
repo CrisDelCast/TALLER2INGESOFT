@@ -1,17 +1,16 @@
+# Usa una imagen base de Java 11, que es la que usa tu proyecto.
+FROM openjdk:11-jre-slim
 
-# Etapa de compilación
-FROM maven:3.9.6-eclipse-temurin-17 AS builder
-WORKDIR /build
-COPY . .
-RUN mvn clean package -DskipTests
+# Establece el directorio de trabajo dentro del contenedor.
+WORKDIR /app
 
-# Etapa de runtime
-FROM openjdk:11
-ARG PROJECT_VERSION=0.1.0
-ENV SPRING_PROFILES_ACTIVE=dev
-RUN mkdir -p /home/app
-WORKDIR /home/app
-COPY --from=builder /build/service-discovery/target/service-discovery-v${PROJECT_VERSION}.jar service-discovery.jar
+# Copia el archivo .jar que fue construido por Maven en el pipeline de GitHub Actions.
+# Lo copiamos desde la carpeta 'target' del microservicio al directorio raíz de la imagen.
+COPY target/*.jar app.jar
+
+# Expone el puerto en el que la aplicación se ejecuta.
 EXPOSE 8761
-ENTRYPOINT ["java", "-Dspring.profiles.active=${SPRING_PROFILES_ACTIVE}", "-jar", "service-discovery.jar"]
+
+# El comando que se ejecuta cuando el contenedor arranca.
+ENTRYPOINT ["java", "-jar", "app.jar"]
 
