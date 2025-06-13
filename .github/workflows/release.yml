@@ -39,13 +39,16 @@ jobs:
           chmod +x ./mvnw
           ./mvnw clean package
 
+      - name: Set Docker Image Name
+        run: echo "IMAGE_TAG=$(echo ${{ github.repository }} | tr '[:upper:]' '[:lower:]'):${{ github.ref_name }}" >> $GITHUB_ENV
+
       - name: Build Docker Images
-        run: |
-          docker build -t ${{ github.repository }}:${{ github.ref_name }} .
+        run: docker build -t ${{ env.IMAGE_TAG }} .
 
       - name: Deploy to Kubernetes
         run: |
           echo "${{ secrets.KUBE_CONFIG }}" > kubeconfig.yaml
           export KUBECONFIG=kubeconfig.yaml
-          kubectl set image deployment/${{ github.event.repository.name }} ${{ github.event.repository.name }}=${{ github.repository }}:${{ github.ref_name }} -n ecommerce
-          kubectl rollout status deployment/${{ github.event.repository.name }} -n ecommerce
+          LOWERCASE_DEPLOYMENT_NAME=$(echo '${{ github.event.repository.name }}' | tr '[:upper:]' '[:lower:]')
+          kubectl set image deployment/${LOWERCASE_DEPLOYMENT_NAME} ${LOWERCASE_DEPLOYMENT_NAME}=${{ env.IMAGE_TAG }} -n ecommerce
+          kubectl rollout status deployment/${LOWERCASE_DEPLOYMENT_NAME} -n ecommerce
