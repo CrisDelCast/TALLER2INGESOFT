@@ -52,8 +52,14 @@ jobs:
 
     # Usa el input 'service_path' para apuntar al directorio correcto
     - name: Build with Maven
-      run: mvn clean package -DskipTests
+      run: mvn clean package
       working-directory: ${{ inputs.service_path }}
+
+    - name: Upload Maven test reports
+      uses: actions/upload-artifact@v4
+      with:
+        name: test-reports-${{ inputs.service_name }}
+        path: ${{ inputs.service_path }}/target/surefire-reports/
 
     - name: SonarCloud Scan
       uses: SonarSource/sonarcloud-github-action@master
@@ -159,6 +165,11 @@ jobs:
           IP=$(kubectl get svc api-gateway -o jsonpath='{.status.loadBalancer.ingress[0].ip}')
           echo "host=http://$IP:8080" >> $GITHUB_OUTPUT
 
+      - name: Diagnose Network Connectivity
+        run: |
+          echo "Attempting to connect to API Gateway at ${{ steps.gateway.outputs.host }}"
+          curl -v --connect-timeout 10 ${{ steps.gateway.outputs.host }}
+
       - name: Install Locust
         run: pip install locust
 
@@ -170,7 +181,7 @@ jobs:
 
       - name: Run OWASP ZAP Baseline
         run: |
-          docker run --rm --network host -v $PWD:/zap/wrk owasp/zap2docker-stable \
+          docker run --rm --network host -v $PWD:/zap/wrk ghcr.io/zaproxy/zaproxy:stable \
             zap-baseline.py -t ${{ steps.gateway.outputs.host }} -r performance/performance-reports/zap_report.html || true
 
       - name: Upload performance and security reports
