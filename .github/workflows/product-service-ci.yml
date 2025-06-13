@@ -13,7 +13,6 @@ on:
 jobs:
   call_reusable_workflow:
     name: Build & Deploy Product Service
-    # 2. USES: Llama al workflow reutilizable que creamos.
     uses: ./.github/workflows/reusable-microservice-ci.yml
     # 3. WITH: Proporciona los inputs que el workflow reutilizable necesita.
     with:
