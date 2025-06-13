@@ -1,4 +1,3 @@
-
 server:
   servlet:
     context-path: /order-service
@@ -35,6 +34,10 @@ management:
   endpoint:
     health:
       show-details: always
+  endpoints:
+    web:
+      exposure:
+        include: "*"
 
 eureka:
   client:
