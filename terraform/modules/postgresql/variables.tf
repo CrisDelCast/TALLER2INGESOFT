@@ -1,4 +1,4 @@
-variable "server_name" {
+variable "name" {
   description = "The name of the PostgreSQL server."
   type        = string
 }
@@ -13,18 +13,19 @@ variable "resource_group_name" {
   type        = string
 }
 
-variable "db_name" {
-  description = "The name of the database to create."
-  type        = string
-}
-
-variable "admin_login" {
+variable "administrator_login" {
   description = "The admin login for the PostgreSQL server."
   type        = string
 }
 
-variable "admin_password" {
+variable "administrator_password" {
   description = "The admin password for the PostgreSQL server."
   type        = string
   sensitive   = true
+}
+
+variable "tags" {
+  description = "A map of tags to assign to the resource."
+  type        = map(string)
+  default     = {}
 }

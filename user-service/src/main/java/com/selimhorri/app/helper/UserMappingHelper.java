@@ -8,25 +8,29 @@ import com.selimhorri.app.dto.UserDto;
 public interface UserMappingHelper {
 	
 	public static UserDto map(final User user) {
-		return UserDto.builder()
+		UserDto.UserDtoBuilder builder = UserDto.builder()
 				.userId(user.getUserId())
 				.firstName(user.getFirstName())
 				.lastName(user.getLastName())
 				.imageUrl(user.getImageUrl())
 				.email(user.getEmail())
-				.phone(user.getPhone())
-				.credentialDto(
-						CredentialDto.builder()
-							.credentialId(user.getCredential().getCredentialId())
-							.username(user.getCredential().getUsername())
-							.password(user.getCredential().getPassword())
-							.roleBasedAuthority(user.getCredential().getRoleBasedAuthority())
-							.isEnabled(user.getCredential().getIsEnabled())
-							.isAccountNonExpired(user.getCredential().getIsAccountNonExpired())
-							.isAccountNonLocked(user.getCredential().getIsAccountNonLocked())
-							.isCredentialsNonExpired(user.getCredential().getIsCredentialsNonExpired())
-							.build())
-				.build();
+				.phone(user.getPhone());
+
+		if (user.getCredential() != null) {
+			builder.credentialDto(
+					CredentialDto.builder()
+						.credentialId(user.getCredential().getCredentialId())
+						.username(user.getCredential().getUsername())
+						.password(user.getCredential().getPassword())
+						.roleBasedAuthority(user.getCredential().getRoleBasedAuthority())
+						.isEnabled(user.getCredential().getIsEnabled())
+						.isAccountNonExpired(user.getCredential().getIsAccountNonExpired())
+						.isAccountNonLocked(user.getCredential().getIsAccountNonLocked())
+						.isCredentialsNonExpired(user.getCredential().getIsCredentialsNonExpired())
+						.build());
+		}
+
+		return builder.build();
 	}
 	
 	public static User map(final UserDto userDto) {

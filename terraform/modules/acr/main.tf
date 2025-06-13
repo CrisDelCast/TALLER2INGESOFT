@@ -4,4 +4,10 @@ resource "azurerm_container_registry" "acr" {
   location            = var.location
   sku                 = "Basic"
   admin_enabled       = true
+  tags                = var.tags
+}
+
+output "id" {
+  description = "The ID of the container registry."
+  value       = azurerm_container_registry.acr.id
 }
