@@ -167,7 +167,11 @@ jobs:
 
       - name: Diagnose Network Connectivity
         run: |
-          echo "Attempting to connect to API Gateway at ${{ steps.gateway.outputs.host }}"
+          echo "--- Verifying pods status ---"
+          kubectl get pods -o wide
+          echo "--- Describing api-gateway service ---"
+          kubectl describe svc api-gateway
+          echo "--- Attempting to connect to API Gateway at ${{ steps.gateway.outputs.host }} ---"
           curl -v --connect-timeout 10 ${{ steps.gateway.outputs.host }}
 
       - name: Install Locust
