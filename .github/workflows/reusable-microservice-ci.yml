@@ -165,6 +165,7 @@ jobs:
       - name: Run Locust
         run: |
           cd performance
+          mkdir -p performance-reports
           locust -f ecommerce_load_test.py --host=${{ steps.gateway.outputs.host }} --users 200 --spawn-rate 20 --run-time 10s --headless --html performance-reports/locust_report.html
 
       - name: Run OWASP ZAP Baseline
