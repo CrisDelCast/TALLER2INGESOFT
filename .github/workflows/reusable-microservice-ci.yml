@@ -170,6 +170,15 @@ jobs:
           echo "Waiting 60 seconds for all services to start and register..."
           sleep 60
 
+      - name: Check Pod Logs for Errors
+        run: |
+          echo "--- Checking logs for all service pods ---"
+          for pod in $(kubectl get pods -l 'app' -o jsonpath='{.items[*].metadata.name}'); do
+            echo "--- Logs for $pod ---"
+            kubectl logs $pod --tail=100 || echo "Could not retrieve logs for $pod"
+            echo "------------------------"
+          done
+
       - name: Install Locust
         run: pip install locust
 
