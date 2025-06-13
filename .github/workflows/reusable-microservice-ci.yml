@@ -92,9 +92,14 @@ jobs:
         # docker push ${{ secrets.ACR_NAME }}.azurecr.io/${{ inputs.service_name }}:${{ github.sha }}
       working-directory: ${{ inputs.service_path }}
 
+    - name: Set image name
+      run: |
+        echo "IMAGE_NAME=${{ secrets.ACR_NAME }}.azurecr.io/${{ inputs.service_name }}:${{ github.sha }}" >> $GITHUB_ENV
+
     - name: Run Trivy vulnerability scanner
       uses: aquasecurity/trivy-action@master
       with:
+        scan-type: 'image'
         image-ref: ${{ env.IMAGE_NAME }}
         format: 'table'
         exit-code: '1'
