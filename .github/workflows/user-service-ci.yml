@@ -4,6 +4,7 @@ on:
   push:
     branches:
       - main
+      - dev
     paths:
       - 'user-service/**'
       - '.github/workflows/user-service-ci.yml'

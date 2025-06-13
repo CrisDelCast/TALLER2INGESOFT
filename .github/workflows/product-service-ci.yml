@@ -5,6 +5,7 @@ on:
   push:
     branches:
       - main
+      - develop
     paths:
       - 'product-service/**'
       - '.github/workflows/product-service-ci.yml'

@@ -4,6 +4,7 @@ on:
   push:
     branches:
       - main
+      - develop
     paths:
       - 'order-service/**'
       - '.github/workflows/order-service-ci.yml'

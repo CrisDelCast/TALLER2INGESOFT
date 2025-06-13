@@ -18,7 +18,7 @@ class EcommerceUser(HttpUser):
     def view_product_detail(self):
         product_id = random.choice(BASE_PRODUCT_IDS)
         self.client.get(f"/api/products/{product_id}", name="product_detail")
-
+    
     @task(1)
     def view_random_user(self):
         user_id = random.choice(BASE_USER_IDS)
