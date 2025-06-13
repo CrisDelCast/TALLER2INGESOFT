@@ -1,6 +1,4 @@
-# 🚀 Taller 2: E-commerce Microservices Backend
-
-# Notas: IngeSoft V Taller 2
+ E-commerce Microservices Backend
 
 ## 📑 Tabla de Contenido
 
@@ -206,9 +204,9 @@ docker-compose -f docker-compose.dev.yml restart
 ```bash
 # Ejemplo despliegue Stage
 aws sso login               # o az login / gcloud auth
-cd terraform/envs/stage
-terraform init              # backend remoto ya configurado
-terraform apply -var-file=stage.tfvars -auto-approve
+terraform init
+terraform plan              # backend remoto ya configurado
+terraform apply 
 ```
 
 > _Figura 2 – Captura de `terraform apply` con cambios planificados_  
