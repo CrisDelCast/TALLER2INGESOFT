@@ -1,0 +1,41 @@
+name: Generate Release Notes
+
+on:
+  push:
+    tags:
+      - 'v*'
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v2
+        with:
+          fetch-depth: 0
+      
+      - name: Generate Release Notes
+        uses: mikepenz/action-jreleaser@v1
+        with:
+          github_token: ${{ secrets.GITHUB_TOKEN }}
+          release_notes_template: |
+            ## Cambios en esta versión
+            
+            ### Nuevas características 🚀
+            {{#each features}}
+            - {{this}}
+            {{/each}}
+            
+            ### Mejoras ✨
+            {{#each improvements}}
+            - {{this}}
+            {{/each}}
+            
+            ### Correcciones 🐛
+            {{#each fixes}}
+            - {{this}}
+            {{/each}}
+            
+            ### Dependencias actualizadas 📦
+            {{#each dependencies}}
+            - {{this}}
+            {{/each}} 

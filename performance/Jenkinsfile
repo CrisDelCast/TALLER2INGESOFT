@@ -2,8 +2,9 @@ pipeline {
     agent any
 
     environment {
+        REPORT_DIR = 'performance-reports'
         LOCUST_IMAGE = 'locustio/locust:latest'
-        PERFORMANCE_REPORTS = 'performance-reports'
+        TARGET_HOST = 'http://api-gateway:8080'
     }
 
     stages {
@@ -13,120 +14,38 @@ pipeline {
             }
         }
 
-        stage('Setup Environment') {
+        stage('Performance Test') {
+            steps {
+                sh 'chmod +x performance/run-performance-tests.sh'
+                sh 'performance/run-performance-tests.sh'
+            }
+        }
+
+        stage('Security Scan (OWASP ZAP)') {
             steps {
                 sh '''
-                    mkdir -p ${PERFORMANCE_REPORTS}
-                    pip install locust
+                    docker run --network host --rm \
+                       -v $PWD:$PWD \
+                       -w $PWD \
+                       owasp/zap2docker-stable \
+                       zap-baseline.py -t ${TARGET_HOST} -r ${REPORT_DIR}/zap_report.html || true
                 '''
-            }
-        }
-
-        stage('Run Light Load Test') {
-            steps {
-                script {
-                    try {
-                        sh '''
-                            locust -f ecommerce_load_test.py \
-                                --headless \
-                                -u 100 \
-                                -r 10 \
-                                --run-time 5m \
-                                --host http://api-gateway:8080 \
-                                --html ${PERFORMANCE_REPORTS}/light_load_test.html
-                        '''
-                    } catch (Exception e) {
-                        echo "Light load test failed: ${e.message}"
-                    }
-                }
-            }
-        }
-
-        stage('Run Normal Load Test') {
-            steps {
-                script {
-                    try {
-                        sh '''
-                            locust -f ecommerce_load_test.py \
-                                --headless \
-                                -u 200 \
-                                -r 20 \
-                                --run-time 10m \
-                                --host http://api-gateway:8080 \
-                                --html ${PERFORMANCE_REPORTS}/normal_load_test.html
-                        '''
-                    } catch (Exception e) {
-                        echo "Normal load test failed: ${e.message}"
-                    }
-                }
-            }
-        }
-
-        stage('Run Heavy Load Test') {
-            steps {
-                script {
-                    try {
-                        sh '''
-                            locust -f ecommerce_load_test.py \
-                                --headless \
-                                -u 400 \
-                                -r 40 \
-                                --run-time 15m \
-                                --host http://api-gateway:8080 \
-                                --html ${PERFORMANCE_REPORTS}/heavy_load_test.html
-                        '''
-                    } catch (Exception e) {
-                        echo "Heavy load test failed: ${e.message}"
-                    }
-                }
-            }
-        }
-
-        stage('Run Spike Test') {
-            steps {
-                script {
-                    try {
-                        sh '''
-                            locust -f ecommerce_load_test.py \
-                                --headless \
-                                -u 1000 \
-                                -r 100 \
-                                --run-time 5m \
-                                --host http://api-gateway:8080 \
-                                --html ${PERFORMANCE_REPORTS}/spike_test.html
-                        '''
-                    } catch (Exception e) {
-                        echo "Spike test failed: ${e.message}"
-                    }
-                }
             }
         }
     }
 
     post {
         always {
-            // Archivar reportes
-            archiveArtifacts artifacts: '${PERFORMANCE_REPORTS}/**/*.html', allowEmptyArchive: true
-            
-            // Publicar reportes HTML
+            archiveArtifacts artifacts: "${REPORT_DIR}/**/*", allowEmptyArchive: true
             publishHTML([
                 allowMissing: true,
                 alwaysLinkToLastBuild: true,
                 keepAll: true,
-                reportDir: '${PERFORMANCE_REPORTS}',
-                reportFiles: '*.html',
-                reportName: 'Performance Test Reports',
-                reportTitles: 'Performance Test Results'
+                reportDir: REPORT_DIR,
+                reportFiles: 'locust_report.html,zap_report.html',
+                reportName: 'Performance & Security Reports'
             ])
-
-            // Limpiar workspace
             cleanWs()
-        }
-        success {
-            echo 'Performance tests completed successfully!'
-        }
-        failure {
-            echo 'Performance tests failed!'
         }
     }
 } 
