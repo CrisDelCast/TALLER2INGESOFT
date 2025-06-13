@@ -129,3 +129,47 @@ jobs:
     - name: Verify deployment
       run: |
         kubectl rollout status deployment/${{ inputs.service_name }} -n default 
+
+  perf_security_tests:
+    name: Performance & Security Tests
+    needs: build_and_deploy
+    if:
+    github.ref == 'refs/heads/develop' ||
+    github.ref == 'refs/heads/release' || startsWith(github.ref, 'refs/heads/release/')
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v3
+
+      - name: Login to Azure
+        uses: azure/login@v1
+        with:
+          creds: ${{ secrets.AZURE_CREDENTIALS }}
+
+      - name: Set AKS context
+        uses: azure/aks-set-context@v3
+        with:
+          resource-group: ${{ secrets.AKS_RESOURCE_GROUP }}
+          cluster-name: ${{ secrets.AKS_CLUSTER_NAME }}
+
+      - name: Obtain API Gateway IP
+        id: gateway
+        run: |
+          IP=$(kubectl get svc api-gateway -o jsonpath='{.status.loadBalancer.ingress[0].ip}')
+          echo "host=http://$IP:8080" >> $GITHUB_OUTPUT
+
+      - name: Run Locust
+        run: |
+          cd performance
+          ./run-performance-tests.sh TARGET_HOST=${{ steps.gateway.outputs.host }} USERS=200 SPAWN_RATE=20 RUNTIME=5m
+
+      - name: Run OWASP ZAP Baseline
+        run: |
+          docker run --rm --network host -v $PWD:/zap/wrk owasp/zap2docker-stable \
+            zap-baseline.py -t ${{ steps.gateway.outputs.host }} -r performance/performance-reports/zap_report.html || true
+
+      - name: Upload performance and security reports
+        uses: actions/upload-artifact@v4
+        with:
+          name: perf-security-${{ inputs.service_name }}
+          path: performance/performance-reports/** 
