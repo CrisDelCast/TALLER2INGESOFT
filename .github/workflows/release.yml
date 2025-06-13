@@ -36,6 +36,7 @@ jobs:
 
       - name: Build and Test
         run: |
+          chmod +x ./mvnw
           ./mvnw clean package
 
       - name: Build Docker Images
