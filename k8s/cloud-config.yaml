@@ -12,9 +12,11 @@ spec:
       labels:
         app: cloud-config
     spec:
+      imagePullSecrets:
+        - name: acr-secret
       containers:
         - name: cloud-config
-          image: ecommerceacr.azurecr.io/cloud-config:v7
+          image: ecommerceacr.azurecr.io/cloud-config:v8
           ports:
             - containerPort: 9296
 ---

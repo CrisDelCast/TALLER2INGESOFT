@@ -12,9 +12,11 @@ spec:
       labels:
         app: service-discovery
     spec:
+      imagePullSecrets:
+        - name: acr-secret
       containers:
         - name: service-discovery
-          image: ecommerceacr.azurecr.io/service-discovery:v2
+          image: ecommerceacr.azurecr.io/service-discovery:v8
           ports:
             - containerPort: 8761
 ---

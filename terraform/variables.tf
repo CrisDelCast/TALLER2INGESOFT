@@ -6,6 +6,12 @@ variable "resource_group_name" {
 
 variable "location" {
   type        = string
-  description = "The Azure region where resources will be created."
+  description = "The Azure region for the main resources."
   default     = "East US"
+}
+
+variable "db_location" {
+  type        = string
+  description = "The Azure region for the database resources."
+  default     = "Central US"
 } 
