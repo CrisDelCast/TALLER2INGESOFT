@@ -186,24 +186,73 @@ terraform apply -var-file=stage.tfvars -auto-approve
 
 ---
 
-## 🔄 Estrategia de Branching
+## 📋 Metodología Ágil – Kanban
+
+Para la gestión del proyecto se adoptó **Kanban**, maximizando flujo y entrega continua.
+
+| Columna | Descripción | Límite WIP |
+|---------|-------------|------------|
+| Backlog | Historias priorizadas por el PO | — |
+| To Do | Listas para iniciar en el sprint actual | 8 |
+| In Progress | Desarrollo activo | 4 |
+| Code Review | PR abiertos esperando revisión | 3 |
+| Testing | QA manual y pruebas E2E | 4 |
+| Done | Listo para deploy / merge a `develop` | — |
+
+![Tablero Kanban](docs/img/kanban_board.png)
+
+Políticas:
+* Daily stand-up de 10 min para gestionar flujo.
+* Revisión continua, sin iteraciones fijas; demo al final de cada _release_ de **2 semanas**.
+* Criterios DoD incluyen cobertura ≥ 80 % y build verde.
+
+---
+
+## 🔄 Estrategia de Branching (GitFlow extendido)
 
 ```mermaid
 flowchart LR
-  A[main] -->|hotfix/*| H
-  D[develop] -->|release/*| R
-  D -->|feature/*| F1(( )) & F2(( ))
-  R --> A
-  H --> A
-  F1 --> D
-  F2 --> D
+  main((main)):::prod
+  stage((stage)):::stage
+  develop((develop)):::dev
+
+  subgraph Feature Branches
+    direction LR
+    f1(feature/XYZ)
+    f2(feature/ABC)
+  end
+
+  subgraph Release Branches
+    rel(release/1.2.0)
+  end
+
+  subgraph Hotfix Branches
+    h1(hotfix/critical-bug)
+  end
+
+  develop --> rel --> stage --> main
+  main --> h1 --> stage --> develop
+  develop --> f1 & f2 --> develop
+
+  classDef prod fill:#FFD700,stroke:#333,stroke-width:1px;
+  classDef stage fill:#87CEFA,stroke:#333,stroke-width:1px;
+  classDef dev fill:#90EE90,stroke:#333,stroke-width:1px;
 ```
 
-* **main**: solo código en producción.
-* **develop**: integración continua.
-* **feature/**: nuevas funcionalidades.
-* **release/**: preparación de versiones.
-* **hotfix/**: correcciones urgentes.
+Ramas principales:
+* **main** → Producción.
+* **stage** → Pre-producción, validación finales.
+* **develop** → Integración continua.
+
+Ramas de soporte:
+* **feature/** → nuevas funcionalidades, parten de `develop`.
+* **release/** → estabilización previo a `stage / main`.
+* **hotfix/** → correcciones críticas, parten de `main`.
+
+Reglas clave:
+1. _Merge_ a `main` sólo mediante `release/*` o `hotfix/*`.
+2. Cada PR requiere 2 aprobaciones + build "verde".
+3. Etiquetado semver automático (`vMAJOR.MINOR.PATCH`) al fusionar a `main`.
 
 ---
 
