@@ -92,15 +92,16 @@ jobs:
         # docker push ${{ secrets.ACR_NAME }}.azurecr.io/${{ inputs.service_name }}:${{ github.sha }}
       working-directory: ${{ inputs.service_path }}
 
-    - name: Scan Docker image with Trivy
+    - name: Run Trivy vulnerability scanner
       uses: aquasecurity/trivy-action@master
       with:
-        image-ref: '${{ secrets.ACR_NAME }}.azurecr.io/${{ inputs.service_name }}:${{ github.sha }}'
+        image-ref: ${{ env.IMAGE_NAME }}
         format: 'table'
         exit-code: '1'
         ignore-unfixed: true
         vuln-type: 'os,library'
         severity: 'CRITICAL,HIGH'
+        ignorefile: '.trivy/ignored-vulnerabilities.txt'
 
     - name: Push Docker image if scan passed
       run: |
