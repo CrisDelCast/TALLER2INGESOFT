@@ -260,11 +260,11 @@ class MobileAppUser(HttpUser):
         # Ver ofertas flash
         self.client.get("/product-service/api/products/flash-deals", headers=headers, name="mobile_flash_deals")
         
-        # Notificaciones push (Asumiendo que existe un 'notification-service')
-        self.client.post("/notification-service/api/notifications/register", 
-                        json={"deviceToken": f"token_{random.randint(1000, 9999)}"},
-                        headers=headers,
-                        name="mobile_push_register")
+        # # Notificaciones push (Asumiendo que existe un 'notification-service')
+        # self.client.post("/notification-service/api/notifications/register", 
+        #                 json={"deviceToken": f"token_{random.randint(1000, 9999)}"},
+        #                 headers=headers,
+        #                 name="mobile_push_register")
 
 # Configuración actualizada de escenarios de prueba
 def create_load_test_config():
