@@ -6,10 +6,25 @@ pipeline {
         NAMESPACE = 'ecommerce'
     }
 
+    when {
+        branch 'feature/release-notes'
+    }
+
     stages {
         stage('Checkout') {
             steps {
                 checkout scm
+            }
+        }
+
+        stage('Build & Test API Gateway') {
+            steps {
+                script {
+                    // Navegar al directorio de api-gateway y ejecutar pruebas
+                    dir('api-gateway') {
+                        bat 'mvnw clean install -Dtest=com.selimhorri.app.e2e.**,com.selimhorri.app.integration.**'
+                    }
+                }
             }
         }
 
@@ -121,6 +136,9 @@ pipeline {
  
     post {
         always {
+            // Publicar resultados de pruebas
+            junit 'api-gateway/target/surefire-reports/TEST-*.xml'
+            
             // Generar reporte de estado
             script {
                 def report = """

@@ -1,0 +1,32 @@
+name: Release Branch Tests
+
+on:
+  push:
+    branches:
+      - 'feature/release-notes'
+
+jobs:
+  test-api-gateway:
+    name: Run E2E and Integration Tests
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v3
+
+      - name: Set up JDK 11
+        uses: actions/setup-java@v3
+        with:
+          java-version: '11'
+          distribution: 'temurin'
+          cache: maven
+
+      - name: Run E2E and Integration Tests for API Gateway
+        run: mvn -B -f api-gateway/pom.xml clean install -Dtest=com.selimhorri.app.e2e.**,com.selimhorri.app.integration.**
+
+      - name: Publish Test Report
+        uses: actions/upload-artifact@v3
+        if: always() # Siempre se ejecuta, incluso si el paso anterior falla
+        with:
+          name: api-gateway-test-report
+          path: api-gateway/target/surefire-reports/ 

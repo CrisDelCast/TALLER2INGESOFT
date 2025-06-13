@@ -1,7 +1,7 @@
 ﻿# Release Notes v0.3.0
 
 ## Resumen de Cambios
-- [DOCUMENTACION] actualizar documentaci├│n de API
+- [DOCUMENTACION] actualizar documentacion de API
 - [CORRECCION] corregir error en login
 - [NUEVA CARACTERISTICA] implementar sistema de usuarios
 
@@ -22,4 +22,5 @@ En caso de problemas, ejecutar:
 ./scripts/rollback/code-rollback.sh v0.2.0 <servicio>
 ./scripts/rollback/config-rollback.sh v0.2.0 <config_dir>
 ./scripts/rollback/db-rollback.sh v0.2.0 <backup_file>
-`
+`
+
