@@ -12,6 +12,10 @@ on:
     types:
       - completed
 
+concurrency:
+  group: ${{ github.event.workflow_run.head_sha }}
+  cancel-in-progress: true
+
 jobs:
   run_e2e_tests:
     name: Run E2E Performance & Security Tests
