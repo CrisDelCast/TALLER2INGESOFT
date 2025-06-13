@@ -59,26 +59,24 @@ public class EcommerceE2EFlowTest {
         int randomId = new Random().nextInt(10000);
         
         // 1. Crear nuevo usuario
-        String userData = String.format("""
-            {
-                "firstName": "Alejandra",
-                "lastName": "Gutierrez",
-                "email": "alejandra.gutierrez%d@example.com",
-                "phone": "300%07d",
-                "imageUrl": "http://example.com/alejandra-avatar%d.jpg",
-                "credential": {
-                    "username": "agutierrez%d",
-                    "password": "securePassword123",
-                    "roleBasedAuthority": "ROLE_USER",
-                    "isEnabled": true,
-                    "isAccountNonExpired": true,
-                    "isAccountNonLocked": true,
-                    "isCredentialsNonExpired": true
-                }
-            }
-            """, randomId, randomId, randomId, randomId);
+        String userPayload = "{"
+                + "\"username\": \"agutierrez" + randomId + "\","
+                + "\"password\": \"securePassword123\","
+                + "\"firstName\": \"Alejandra\","
+                + "\"lastName\": \"Gutierrez\","
+                + "\"email\": \"alejandra.gutierrez" + randomId + "@example.com\","
+                + "\"phone\": \"300" + String.format("%07d", randomId) + "\","
+                + "\"imageUrl\": \"http://example.com/alejandra-avatar" + randomId + ".jpg\","
+                + "\"credential\": {"
+                + "\"roleBasedAuthority\": \"ROLE_USER\","
+                + "\"isEnabled\": true,"
+                + "\"isAccountNonExpired\": true,"
+                + "\"isAccountNonLocked\": true,"
+                + "\"isCredentialsNonExpired\": true"
+                + "}"
+                + "}";
 
-        HttpEntity<String> userRequest = new HttpEntity<>(userData, headers);
+        HttpEntity<String> userRequest = new HttpEntity<>(userPayload, headers);
         ResponseEntity<Map> userResponse = restTemplate.postForEntity(
             baseUrl + "/api/users", userRequest, Map.class);
 
@@ -171,15 +169,13 @@ public class EcommerceE2EFlowTest {
         
         // 1. Usuario agrega productos a favoritos (si están disponibles)
         if (createdProductId != null) {
-            String favouriteData = String.format("""
-                {
-                    "likeDate": "2025-01-25",
-                    "userId": %d,
-                    "productId": %d
-                }
-                """, createdUserId, createdProductId);
+            String favouritePayload = "{"
+                    + "\"likeDate\": \"2025-01-25\","
+                    + "\"userId\": " + createdUserId + ","
+                    + "\"productId\": " + createdProductId
+                    + "}";
 
-            HttpEntity<String> favouriteRequest = new HttpEntity<>(favouriteData, headers);
+            HttpEntity<String> favouriteRequest = new HttpEntity<>(favouritePayload, headers);
             ResponseEntity<Map> favouriteResponse = restTemplate.postForEntity(
                 baseUrl + "/api/favourites", favouriteRequest, Map.class);
             
@@ -188,16 +184,14 @@ public class EcommerceE2EFlowTest {
         }
         
         // 2. Usuario crea una orden
-        String orderData = String.format("""
-            {
-                "orderDate": "2025-01-25",
-                "orderDesc": "E2E Test Order - MacBook Pro 16 pulgadas",
-                "orderFee": 8999.99,
-                "userId": %d
-            }
-            """, createdUserId);
+        String orderPayload = "{"
+                + "\"userId\": " + createdUserId + ","
+                + "\"orderDate\": \"2025-01-25\","
+                + "\"orderDesc\": \"E2E Test Order - MacBook Pro 16 pulgadas\","
+                + "\"orderFee\": 8999.99"
+                + "}";
 
-        HttpEntity<String> orderRequest = new HttpEntity<>(orderData, headers);
+        HttpEntity<String> orderRequest = new HttpEntity<>(orderPayload, headers);
         ResponseEntity<Map> orderResponse = restTemplate.postForEntity(
             baseUrl + "/api/orders", orderRequest, Map.class);
 
@@ -237,17 +231,15 @@ public class EcommerceE2EFlowTest {
         }
         
         // 1. Procesar pago con tarjeta de crédito
-        String creditCardPayment = String.format("""
-            {
-                "paymentDate": "2025-01-25",
-                "paymentMethod": "CREDIT_CARD",
-                "fee": 8999.99,
-                "isPaid": true,
-                "orderId": %d
-            }
-            """, createdOrderId);
+        String paymentPayload = "{"
+                + "\"orderId\": " + createdOrderId + ","
+                + "\"paymentDate\": \"2025-01-25\","
+                + "\"paymentMethod\": \"CREDIT_CARD\","
+                + "\"fee\": 8999.99,"
+                + "\"isPaid\": true"
+                + "}";
 
-        HttpEntity<String> paymentRequest = new HttpEntity<>(creditCardPayment, headers);
+        HttpEntity<String> paymentRequest = new HttpEntity<>(paymentPayload, headers);
         ResponseEntity<Map> paymentResponse = restTemplate.postForEntity(
             baseUrl + "/api/payments", paymentRequest, Map.class);
 
@@ -277,17 +269,15 @@ public class EcommerceE2EFlowTest {
         }
         
         // 3. Simular pago alternativo (PayPal)
-        String paypalPayment = String.format("""
-            {
-                "paymentDate": "2025-01-25",
-                "paymentMethod": "PAYPAL",
-                "fee": 8999.99,
-                "isPaid": true,
-                "orderId": %d
-            }
-            """, createdOrderId);
+        String paypalPayload = "{"
+                + "\"orderId\": " + createdOrderId + ","
+                + "\"paymentDate\": \"2025-01-25\","
+                + "\"paymentMethod\": \"PAYPAL\","
+                + "\"fee\": 8999.99,"
+                + "\"isPaid\": true"
+                + "}";
 
-        HttpEntity<String> paypalRequest = new HttpEntity<>(paypalPayment, headers);
+        HttpEntity<String> paypalRequest = new HttpEntity<>(paypalPayload, headers);
         ResponseEntity<Map> paypalResponse = restTemplate.postForEntity(
             baseUrl + "/api/payments", paypalRequest, Map.class);
         
@@ -311,15 +301,13 @@ public class EcommerceE2EFlowTest {
         }
         
         // 1. Crear envío para la orden
-        String shippingData = String.format("""
-            {
-                "shippingDate": "2025-01-25",
-                "shippingAddress": "Carrera 15 #93-47, Apartamento 501, Bogotá, Colombia",
-                "orderId": %d
-            }
-            """, createdOrderId);
+        String shippingPayload = "{"
+                + "\"shippingDate\": \"2025-01-25\","
+                + "\"shippingAddress\": \"Carrera 15 #93-47, Apartamento 501, Bogotá, Colombia\","
+                + "\"orderId\": " + createdOrderId
+                + "}";
 
-        HttpEntity<String> shippingRequest = new HttpEntity<>(shippingData, headers);
+        HttpEntity<String> shippingRequest = new HttpEntity<>(shippingPayload, headers);
         ResponseEntity<Map> shippingResponse = restTemplate.postForEntity(
             baseUrl + "/api/shippings", shippingRequest, Map.class);
 
@@ -381,16 +369,14 @@ public class EcommerceE2EFlowTest {
             assertNotNull(currentUser);
             
             // 2. Actualizar información del usuario
-            String updatedUserData = String.format("""
-                {
-                    "userId": %d,
-                    "firstName": "Alejandra",
-                    "lastName": "Gutierrez Morales",
-                    "email": "alejandra.gutierrez.morales@example.com",
-                    "phone": "3001234567",
-                    "imageUrl": "http://example.com/alejandra-updated-avatar.jpg"
-                }
-                """, createdUserId);
+            String updatedUserData = "{"
+                    + "\"userId\": " + createdUserId + ","
+                    + "\"firstName\": \"Alejandra\","
+                    + "\"lastName\": \"Gutierrez Morales\","
+                    + "\"email\": \"alejandra.gutierrez.morales@example.com\","
+                    + "\"phone\": \"3001234567\","
+                    + "\"imageUrl\": \"http://example.com/alejandra-updated-avatar.jpg\""
+                    + "}";
 
             HttpEntity<String> updateRequest = new HttpEntity<>(updatedUserData, headers);
             ResponseEntity<Map> updateResponse = restTemplate.exchange(

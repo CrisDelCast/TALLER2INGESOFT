@@ -17,6 +17,7 @@ import static org.hamcrest.Matchers.*;
 
 import java.util.Map;
 import java.util.concurrent.TimeUnit;
+import java.util.HashMap;
 
 /**
  * Pruebas de Integración - Comunicación entre Microservicios
@@ -71,23 +72,21 @@ public class MicroservicesIntegrationTest {
     @DisplayName("User Service debe poder comunicarse con Product Service")
     void testUserServiceToProductServiceCommunication() {
         // 1. Crear un usuario en User Service
-        String userData = """
-            {
-                "firstName": "Sofia",
-                "lastName": "Martinez",
-                "email": "sofia.martinez@example.com",
-                "phone": "3157894561",
-                "credential": {
-                    "username": "smartinez",
-                    "password": "password123",
-                    "roleBasedAuthority": "ROLE_USER",
-                    "isEnabled": true,
-                    "isAccountNonExpired": true,
-                    "isAccountNonLocked": true,
-                    "isCredentialsNonExpired": true
-                }
-            }
-            """;
+        String userData = "{"
+                + "\"firstName\": \"Sofia\","
+                + "\"lastName\": \"Martinez\","
+                + "\"email\": \"sofia.martinez@example.com\","
+                + "\"phone\": \"3157894561\","
+                + "\"credential\": {"
+                + "\"username\": \"smartinez\","
+                + "\"password\": \"password123\","
+                + "\"roleBasedAuthority\": \"ROLE_USER\","
+                + "\"isEnabled\": true,"
+                + "\"isAccountNonExpired\": true,"
+                + "\"isAccountNonLocked\": true,"
+                + "\"isCredentialsNonExpired\": true"
+                + "}"
+                + "}";
 
         HttpEntity<String> userRequest = new HttpEntity<>(userData, headers);
         
@@ -125,14 +124,12 @@ public class MicroservicesIntegrationTest {
         
         if (usersResponse.getStatusCode() == HttpStatus.OK) {
             // 2. Crear una orden (esto debería validar usuario internamente)
-            String orderData = """
-                {
-                    "orderDate": "2025-01-25",
-                    "orderDesc": "Orden de prueba de integración - Laptop Dell",
-                    "orderFee": 2899.99,
-                    "userId": 1
-                }
-                """;
+            String orderData = "{"
+                    + "\"orderDate\": \"2025-01-25\","
+                    + "\"orderDesc\": \"Orden de prueba de integración - Laptop Dell\","
+                    + "\"orderFee\": 2899.99,"
+                    + "\"userId\": 1"
+                    + "}";
 
             HttpEntity<String> orderRequest = new HttpEntity<>(orderData, headers);
             
@@ -157,15 +154,13 @@ public class MicroservicesIntegrationTest {
     @DisplayName("Payment Service debe procesar pagos para órdenes existentes")
     void testPaymentServiceOrderIntegration() {
         // 1. Simular procesamiento de pago
-        String paymentData = """
-            {
-                "paymentDate": "2025-01-25",
-                "paymentMethod": "CREDIT_CARD",
-                "fee": 2899.99,
-                "isPaid": true,
-                "orderId": 1
-            }
-            """;
+        String paymentData = "{"
+                + "\"paymentDate\": \"2025-01-25\","
+                + "\"paymentMethod\": \"CREDIT_CARD\","
+                + "\"fee\": 2899.99,"
+                + "\"isPaid\": true,"
+                + "\"orderId\": 1"
+                + "}";
 
         HttpEntity<String> paymentRequest = new HttpEntity<>(paymentData, headers);
         

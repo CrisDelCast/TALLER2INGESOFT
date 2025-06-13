@@ -12,6 +12,8 @@ spec:
       labels:
         app: product-service
     spec:
+      imagePullSecrets:
+        - name: acr-secret
       containers:
         - name: product-service
           image: ecommerceacr.azurecr.io/product-service:v8

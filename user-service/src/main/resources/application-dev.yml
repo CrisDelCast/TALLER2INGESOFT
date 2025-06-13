@@ -1,4 +1,3 @@
-
 server:
   port: 8700
 
@@ -10,22 +9,22 @@ management:
 
 spring:
   datasource:
-    url: jdbc:h2:mem:ecommerce_dev_db;DB_CLOSE_ON_EXIT=FALSE
-    username: sa
-    password: 
+    driver-class-name: org.postgresql.Driver
+    url: jdbc:postgresql://${DB_HOST:localhost}:${DB_PORT:5432}/${DB_NAME:user_db}
+    username: ${DB_USERNAME:psqladmin}
+    password: ${DB_PASSWORD:Password1234!}
   jpa:
     show-sql: true
     hibernate:
-      ddl-auto: validate
+      ddl-auto: update
     properties:
       hibernate:
-        dialect: org.hibernate.dialect.H2Dialect
+        dialect: org.hibernate.dialect.PostgreSQLDialect
         use_sql_comments: true
         format_sql: true
   h2:
     console:
-      enabled: true
-      path: /h2-console
+      enabled: false
   #flyway:
   #  baseline-on-migrate: true
   #  enabled: true

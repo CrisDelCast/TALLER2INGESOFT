@@ -2,9 +2,6 @@ from locust import HttpUser, task, between
 import json
 import random
 
-BASE_PRODUCT_IDS = list(range(1, 200))  # IDs válidos aproximados
-BASE_USER_IDS = list(range(1, 100))
-
 class EcommerceUser(HttpUser):
     """Simula un usuario navegando por el e-commerce sin autenticación"""
 
@@ -292,7 +289,7 @@ def create_load_test_config():
             "users": 1000,
             "spawn_rate": 100,
             "run_time": "10m",
-            "user_classes": [EcommerceUser, MobileAppUser]
+            "user_classes": [SpikeLoadUser, MobileAppUser]
         },
         "endurance_test": {
             "users": 300,
