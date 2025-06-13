@@ -25,7 +25,7 @@ jobs:
         run: mvn -B -f api-gateway/pom.xml clean install -Dtest=com.selimhorri.app.e2e.**,com.selimhorri.app.integration.**
 
       - name: Publish Test Report
-        uses: actions/upload-artifact@v3
+        uses: actions/upload-artifact@v4
         if: always() # Siempre se ejecuta, incluso si el paso anterior falla
         with:
           name: api-gateway-test-report
