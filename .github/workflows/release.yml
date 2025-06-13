@@ -1,0 +1,49 @@
+name: Release Process
+
+on:
+  push:
+    tags:
+      - 'v*'
+
+jobs:
+  release:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v2
+        with:
+          fetch-depth: 0
+
+      - name: Set up JDK
+        uses: actions/setup-java@v2
+        with:
+          java-version: '17'
+          distribution: 'adopt'
+
+      - name: Generate Release Notes
+        run: |
+          chmod +x scripts/generate-release-notes.sh
+          ./scripts/generate-release-notes.sh ${GITHUB_REF#refs/tags/} $(git describe --tags --abbrev=0 ${GITHUB_REF#refs/tags/}^)
+
+      - name: Create Release
+        uses: softprops/action-gh-release@v1
+        with:
+          files: |
+            release_notes_*.md
+          body_path: release_notes_${GITHUB_REF#refs/tags/}.md
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Build and Test
+        run: |
+          ./mvnw clean package
+
+      - name: Build Docker Images
+        run: |
+          docker build -t ${{ github.repository }}:${{ github.ref_name }} .
+
+      - name: Deploy to Kubernetes
+        run: |
+          echo "${{ secrets.KUBE_CONFIG }}" > kubeconfig.yaml
+          export KUBECONFIG=kubeconfig.yaml
+          kubectl set image deployment/${{ github.event.repository.name }} ${{ github.event.repository.name }}=${{ github.repository }}:${{ github.ref_name }} -n ecommerce
+          kubectl rollout status deployment/${{ github.event.repository.name }} -n ecommerce 
