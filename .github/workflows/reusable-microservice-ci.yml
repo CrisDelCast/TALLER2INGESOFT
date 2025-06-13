@@ -159,6 +159,7 @@ jobs:
       - name: Run Locust
         run: |
           cd performance
+          chmod +x run-performance-tests.sh
           ./run-performance-tests.sh TARGET_HOST=${{ steps.gateway.outputs.host }} USERS=200 SPAWN_RATE=20 RUNTIME=5m
 
       - name: Run OWASP ZAP Baseline
