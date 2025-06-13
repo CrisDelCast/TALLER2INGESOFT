@@ -133,9 +133,7 @@ jobs:
   perf_security_tests:
     name: Performance & Security Tests
     needs: build_and_deploy
-    if:
-    github.ref == 'refs/heads/develop' ||
-    github.ref == 'refs/heads/release' || startsWith(github.ref, 'refs/heads/release/')
+    if: ${{ github.ref == 'refs/heads/develop' || github.ref == 'refs/heads/release' || startsWith(github.ref, 'refs/heads/release/') }}
     runs-on: ubuntu-latest
     steps:
       - name: Checkout repository
