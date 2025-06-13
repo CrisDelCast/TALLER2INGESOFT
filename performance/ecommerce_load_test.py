@@ -12,17 +12,17 @@ class EcommerceUser(HttpUser):
 
     @task(5)
     def list_products(self):
-        self.client.get("/api/products", name="list_products")
+        self.client.get("/product-service/api/products", name="list_products")
 
     @task(3)
     def view_product_detail(self):
         product_id = random.choice(BASE_PRODUCT_IDS)
-        self.client.get(f"/api/products/{product_id}", name="product_detail")
+        self.client.get(f"/product-service/api/products/{product_id}", name="product_detail")
     
     @task(1)
     def view_random_user(self):
         user_id = random.choice(BASE_USER_IDS)
-        self.client.get(f"/api/users/{user_id}", name="user_detail")
+        self.client.get(f"/user-service/api/users/{user_id}", name="user_detail")
 
 class LightLoadUser(EcommerceUser):
     wait_time = between(2, 5)
@@ -45,18 +45,18 @@ class ProductServiceUser(HttpUser):
         sort_by = random.choice(["price", "name", "rating", "date"])
         order = random.choice(["asc", "desc"])
         self.client.get(
-            f"/api/products?page={page}&size={size}&sort={sort_by}&order={order}",
+            f"/product-service/api/products?page={page}&size={size}&sort={sort_by}&order={order}",
             name="products_advanced_paginated"
         )
         
         # Productos por categoría
         categories = ["electronics", "clothing", "books", "home", "sports"]
         category = random.choice(categories)
-        self.client.get(f"/api/products/category/{category}", name="products_by_category")
+        self.client.get(f"/product-service/api/products/category/{category}", name="products_by_category")
         
         # Productos en oferta
-        self.client.get("/api/products/featured", name="featured_products")
-        self.client.get("/api/products/on-sale", name="sale_products")
+        self.client.get("/product-service/api/products/featured", name="featured_products")
+        self.client.get("/product-service/api/products/on-sale", name="sale_products")
     
     @task(3)
     def search_products(self):
@@ -69,13 +69,13 @@ class ProductServiceUser(HttpUser):
         term = random.choice(search_terms)
         
         # Búsqueda simple
-        self.client.get(f"/api/products/search?q={term}", name="simple_search")
+        self.client.get(f"/product-service/api/products/search?q={term}", name="simple_search")
         
         # Búsqueda con filtros
         min_price = random.randint(10, 100)
         max_price = min_price + random.randint(50, 500)
         self.client.get(
-            f"/api/products/search?q={term}&minPrice={min_price}&maxPrice={max_price}",
+            f"/product-service/api/products/search?q={term}&minPrice={min_price}&maxPrice={max_price}",
             name="filtered_search"
         )
     
@@ -85,13 +85,13 @@ class ProductServiceUser(HttpUser):
         product_id = random.randint(1, 1000)
         
         # Detalles del producto
-        self.client.get(f"/api/products/{product_id}", name="product_details")
+        self.client.get(f"/product-service/api/products/{product_id}", name="product_details")
         
         # Reviews del producto
-        self.client.get(f"/api/products/{product_id}/reviews", name="product_reviews")
+        self.client.get(f"/product-service/api/products/{product_id}/reviews", name="product_reviews")
         
         # Productos relacionados
-        self.client.get(f"/api/products/{product_id}/related", name="related_products")
+        self.client.get(f"/product-service/api/products/{product_id}/related", name="related_products")
 
 class OrderServiceUser(HttpUser):
     """Usuario especializado para pruebas del servicio de órdenes"""
@@ -126,18 +126,18 @@ class OrderServiceUser(HttpUser):
             "paymentMethod": random.choice(["credit_card", "debit_card", "paypal"])
         }
         
-        response = self.client.post("/api/orders", json=order_data, headers=headers, name="create_complex_order")
+        response = self.client.post("/order-service/api/orders", json=order_data, headers=headers, name="create_complex_order")
         
         if response.status_code == 201:
             order_id = response.json().get("orderId", random.randint(1, 1000))
             
             # Operaciones sobre la orden
-            self.client.get(f"/api/orders/{order_id}", headers=headers, name="get_order")
-            self.client.get(f"/api/orders/{order_id}/status", headers=headers, name="order_status_check")
+            self.client.get(f"/order-service/api/orders/{order_id}", headers=headers, name="get_order")
+            self.client.get(f"/order-service/api/orders/{order_id}/status", headers=headers, name="order_status_check")
             
             # Actualizar orden (si está permitido)
             update_data = {"status": "processing"}
-            self.client.put(f"/api/orders/{order_id}/status", json=update_data, headers=headers, name="update_order_status")
+            self.client.put(f"/order-service/api/orders/{order_id}/status", json=update_data, headers=headers, name="update_order_status")
     
     @task(2)
     def order_queries(self):
@@ -146,14 +146,14 @@ class OrderServiceUser(HttpUser):
         
         # Mis órdenes con filtros
         status = random.choice(["pending", "processing", "shipped", "delivered"])
-        self.client.get(f"/api/orders/my-orders?status={status}", headers=headers, name="orders_by_status")
+        self.client.get(f"/order-service/api/orders/my-orders?status={status}", headers=headers, name="orders_by_status")
         
         # Órdenes por fecha
         days_ago = random.randint(1, 30)
-        self.client.get(f"/api/orders/my-orders?days={days_ago}", headers=headers, name="orders_by_date")
+        self.client.get(f"/order-service/api/orders/my-orders?days={days_ago}", headers=headers, name="orders_by_date")
         
         # Estadísticas de órdenes
-        self.client.get("/api/orders/stats", headers=headers, name="order_statistics")
+        self.client.get("/order-service/api/orders/stats", headers=headers, name="order_statistics")
 
 class PaymentServiceUser(HttpUser):
     """Usuario especializado para pruebas del servicio de pagos"""
@@ -184,16 +184,16 @@ class PaymentServiceUser(HttpUser):
         }
         
         # Procesar pago
-        response = self.client.post("/api/payments", json=payment_data, headers=headers, name="process_payment")
+        response = self.client.post("/payment-service/api/payments", json=payment_data, headers=headers, name="process_payment")
         
         if response.status_code == 200:
             payment_id = response.json().get("paymentId", random.randint(1, 1000))
             
             # Verificar estado del pago
-            self.client.get(f"/api/payments/{payment_id}", headers=headers, name="payment_status")
+            self.client.get(f"/payment-service/api/payments/{payment_id}", headers=headers, name="payment_status")
             
             # Historial de pagos
-            self.client.get("/api/payments/history", headers=headers, name="payment_history")
+            self.client.get("/payment-service/api/payments/history", headers=headers, name="payment_history")
     
     @task(1)
     def payment_validation(self):
@@ -207,11 +207,11 @@ class PaymentServiceUser(HttpUser):
             "expiryYear": random.randint(2024, 2030),
             "cvv": f"{random.randint(100, 999)}"
         }
-        self.client.post("/api/payments/validate-card", json=card_data, headers=headers, name="validate_card")
+        self.client.post("/payment-service/api/payments/validate-card", json=card_data, headers=headers, name="validate_card")
         
         # Verificar límites
         amount_data = {"amount": random.uniform(100.0, 5000.0), "currency": "USD"}
-        self.client.post("/api/payments/check-limits", json=amount_data, headers=headers, name="check_payment_limits")
+        self.client.post("/payment-service/api/payments/check-limits", json=amount_data, headers=headers, name="check_payment_limits")
 
 class HealthCheckUser(HttpUser):
     """Usuario para monitorear health checks de todos los servicios"""
@@ -221,23 +221,22 @@ class HealthCheckUser(HttpUser):
     def check_all_services(self):
         """Verificar salud de todos los microservicios"""
         services = [
-            ("service-discovery", 8761),
-            ("user-service", 8080),
-            ("product-service", 8081),
-            ("order-service", 8082),
-            ("payment-service", 8083),
-            ("shipping-service", 8084)
+            "user-service",
+            "product-service",
+            "order-service",
+            "payment-service",
+            "shipping-service"
         ]
         
-        for service_name, port in services:
+        for service_name in services:
             # Health check endpoint
-            self.client.get(f"/actuator/health", name=f"{service_name}_health")
+            self.client.get(f"/{service_name}/actuator/health", name=f"{service_name}_health")
             
             # Metrics endpoint
-            self.client.get(f"/actuator/metrics", name=f"{service_name}_metrics")
+            self.client.get(f"/{service_name}/actuator/metrics", name=f"{service_name}_metrics")
             
             # Info endpoint
-            self.client.get(f"/actuator/info", name=f"{service_name}_info")
+            self.client.get(f"/{service_name}/actuator/info", name=f"{service_name}_info")
 
 # Nuevo escenario de prueba
 class MobileAppUser(HttpUser):
@@ -256,13 +255,13 @@ class MobileAppUser(HttpUser):
         }
         
         # Búsqueda rápida
-        self.client.get("/api/products/quick-search?q=phone", headers=headers, name="mobile_quick_search")
+        self.client.get("/product-service/api/products/quick-search?q=phone", headers=headers, name="mobile_quick_search")
         
         # Ver ofertas flash
-        self.client.get("/api/products/flash-deals", headers=headers, name="mobile_flash_deals")
+        self.client.get("/product-service/api/products/flash-deals", headers=headers, name="mobile_flash_deals")
         
-        # Notificaciones push
-        self.client.post("/api/notifications/register", 
+        # Notificaciones push (Asumiendo que existe un 'notification-service')
+        self.client.post("/notification-service/api/notifications/register", 
                         json={"deviceToken": f"token_{random.randint(1000, 9999)}"},
                         headers=headers,
                         name="mobile_push_register")
