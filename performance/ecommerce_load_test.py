@@ -2,142 +2,35 @@ from locust import HttpUser, task, between
 import json
 import random
 
+BASE_PRODUCT_IDS = list(range(1, 200))  # IDs válidos aproximados
+BASE_USER_IDS = list(range(1, 100))
+
 class EcommerceUser(HttpUser):
-    wait_time = between(2, 5)
-    
-    def on_start(self):
-        """Llamado cuando un usuario inicia sesión"""
-        self.auth_token = None
-        self.user_id = None
-        self.login()
-    
-    def login(self):
-        """Simular login de usuario"""
-        login_data = {
-            "username": f"testuser{random.randint(1, 5000)}",
-            "password": "testpass123"
-        }
-        
-        response = self.client.post("/api/users/login", json=login_data)
-        if response.status_code == 200:
-            self.auth_token = response.json().get("token")
-            self.user_id = response.json().get("userId")
-    
-    @task(4)
-    def view_products(self):
-        """Simular navegación por productos"""
-        # Ver lista de productos con filtros
-        category = random.choice(["electronics", "clothing", "books", "home", "sports"])
-        self.client.get(f"/api/products?category={category}", name="products_by_category")
-        
-        # Ver producto específico
-        product_id = random.randint(1, 200)
+    """Simula un usuario navegando por el e-commerce sin autenticación"""
+
+    wait_time = between(1, 3)
+
+    @task(5)
+    def list_products(self):
+        self.client.get("/api/products", name="list_products")
+
+    @task(3)
+    def view_product_detail(self):
+        product_id = random.choice(BASE_PRODUCT_IDS)
         self.client.get(f"/api/products/{product_id}", name="product_detail")
-        
-        # Buscar productos con filtros avanzados
-        search_terms = ["laptop", "phone", "camera", "book", "clothing", "gaming", "fitness", "kitchen"]
-        search_term = random.choice(search_terms)
-        min_price = random.randint(10, 100)
-        max_price = min_price + random.randint(50, 1000)
-        self.client.get(
-            f"/api/products/search?q={search_term}&minPrice={min_price}&maxPrice={max_price}",
-            name="advanced_product_search"
-        )
-    
-    @task(2)
-    def manage_cart(self):
-        """Simular manejo del carrito de compras"""
-        headers = {"Authorization": f"Bearer {self.auth_token}"} if self.auth_token else {}
-        
-        # Ver carrito
-        self.client.get("/api/cart", headers=headers, name="view_cart")
-        
-        # Agregar producto al carrito
-        cart_item = {
-            "productId": random.randint(1, 100),
-            "quantity": random.randint(1, 3)
-        }
-        self.client.post("/api/cart/items", json=cart_item, headers=headers, name="add_to_cart")
-        
-        # Actualizar cantidad
-        item_id = random.randint(1, 10)
-        update_data = {"quantity": random.randint(1, 5)}
-        self.client.put(f"/api/cart/items/{item_id}", json=update_data, headers=headers, name="update_cart")
-    
+
     @task(1)
-    def create_order(self):
-        """Simular proceso de creación de orden"""
-        headers = {"Authorization": f"Bearer {self.auth_token}"} if self.auth_token else {}
-        
-        order_data = {
-            "items": [
-                {
-                    "productId": random.randint(1, 100),
-                    "quantity": random.randint(1, 2),
-                    "price": round(random.uniform(10.0, 500.0), 2)
-                }
-            ],
-            "shippingAddress": {
-                "street": "123 Test Street",
-                "city": "Test City",
-                "zipCode": "12345",
-                "country": "Test Country"
-            },
-            "paymentMethod": "credit_card"
-        }
-        
-        # Crear orden
-        response = self.client.post("/api/orders", json=order_data, headers=headers, name="create_order")
-        
-        if response.status_code == 201:
-            order_id = response.json().get("orderId")
-            
-            # Ver detalles de la orden
-            self.client.get(f"/api/orders/{order_id}", headers=headers, name="order_details")
-            
-            # Simular proceso de pago
-            payment_data = {
-                "orderId": order_id,
-                "amount": order_data["items"][0]["price"],
-                "paymentMethod": "credit_card",
-                "cardToken": "tok_test_12345"
-            }
-            self.client.post("/api/payments", json=payment_data, headers=headers, name="process_payment")
-    
-    @task(1)
-    def check_order_status(self):
-        """Simular verificación de estado de órdenes"""
-        headers = {"Authorization": f"Bearer {self.auth_token}"} if self.auth_token else {}
-        
-        # Ver mis órdenes
-        self.client.get("/api/orders/my-orders", headers=headers, name="my_orders")
-        
-        # Verificar estado de orden específica
-        order_id = random.randint(1, 1000)
-        self.client.get(f"/api/orders/{order_id}/status", headers=headers, name="order_status")
-        
-        # Ver historial de envíos
-        self.client.get(f"/api/shipping/orders/{order_id}/tracking", headers=headers, name="shipping_tracking")
-    
-    @task(1)
-    def user_profile_operations(self):
-        """Simular operaciones de perfil de usuario"""
-        headers = {"Authorization": f"Bearer {self.auth_token}"} if self.auth_token else {}
-        
-        # Ver perfil
-        self.client.get("/api/users/profile", headers=headers, name="user_profile")
-        
-        # Actualizar perfil
-        profile_data = {
-            "firstName": f"TestUser{random.randint(1, 1000)}",
-            "lastName": "LoadTest",
-            "email": f"test{random.randint(1, 1000)}@example.com",
-            "phone": f"+1-555-{random.randint(1000, 9999)}"
-        }
-        self.client.put("/api/users/profile", json=profile_data, headers=headers, name="update_profile")
-        
-        # Ver historial de órdenes
-        self.client.get("/api/users/order-history", headers=headers, name="order_history")
+    def view_random_user(self):
+        user_id = random.choice(BASE_USER_IDS)
+        self.client.get(f"/api/users/{user_id}", name="user_detail")
+
+class LightLoadUser(EcommerceUser):
+    wait_time = between(2, 5)
+    weight = 1
+
+class HeavyLoadUser(EcommerceUser):
+    wait_time = between(0.5, 2)
+    weight = 4
 
 class ProductServiceUser(HttpUser):
     """Usuario especializado para pruebas del servicio de productos"""
@@ -346,22 +239,6 @@ class HealthCheckUser(HttpUser):
             # Info endpoint
             self.client.get(f"/actuator/info", name=f"{service_name}_info")
 
-# Configuración para diferentes tipos de carga
-class LightLoadUser(EcommerceUser):
-    """Usuario para carga ligera"""
-    wait_time = between(3, 8)
-    weight = 1
-
-class HeavyLoadUser(EcommerceUser):
-    """Usuario para carga pesada"""
-    wait_time = between(0.5, 2)
-    weight = 3
-
-class SpikeLoadUser(EcommerceUser):
-    """Usuario para picos de carga"""
-    wait_time = between(0.1, 1)
-    weight = 5
-
 # Nuevo escenario de prueba
 class MobileAppUser(HttpUser):
     """Usuario simulando comportamiento de aplicación móvil"""
@@ -416,7 +293,7 @@ def create_load_test_config():
             "users": 1000,
             "spawn_rate": 100,
             "run_time": "10m",
-            "user_classes": [SpikeLoadUser, MobileAppUser]
+            "user_classes": [EcommerceUser, MobileAppUser]
         },
         "endurance_test": {
             "users": 300,
