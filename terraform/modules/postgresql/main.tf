@@ -1,15 +1,16 @@
 resource "azurerm_postgresql_flexible_server" "postgres_server" {
-  name                   = var.server_name
-  resource_group_name  = var.resource_group_name
+  name                   = var.name
+  resource_group_name    = var.resource_group_name
   location               = var.location
   version                = "12"
   delegated_subnet_id    = null
   private_dns_zone_id    = null
-  administrator_login    = var.admin_login
-  administrator_password = var.admin_password
+  administrator_login    = var.administrator_login
+  administrator_password = var.administrator_password
   zone                   = "1"
   storage_mb             = 32768
   sku_name               = "B_Standard_B1ms"
+  tags                   = var.tags
 
   lifecycle {
     ignore_changes = [
@@ -19,7 +20,7 @@ resource "azurerm_postgresql_flexible_server" "postgres_server" {
 }
 
 resource "azurerm_postgresql_flexible_server_database" "user_database" {
-  name      = var.db_name
+  name      = "user_db"
   server_id = azurerm_postgresql_flexible_server.postgres_server.id
   collation = "en_US.utf8"
   charset   = "utf8"

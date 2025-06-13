@@ -17,3 +17,15 @@ variable "dns_prefix" {
   description = "The DNS prefix for the AKS cluster."
   type        = string
 }
+
+variable "acr_id" {
+  description = "The ID of the Azure Container Registry to attach to the AKS cluster."
+  type        = string
+  default     = null
+}
+
+variable "tags" {
+  description = "A map of tags to assign to the resource."
+  type        = map(string)
+  default     = {}
+}

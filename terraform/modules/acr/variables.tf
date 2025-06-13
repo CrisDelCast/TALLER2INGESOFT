@@ -12,3 +12,9 @@ variable "location" {
   description = "The Azure region where the ACR will be created."
   type        = string
 }
+
+variable "tags" {
+  description = "A map of tags to assign to the resource."
+  type        = map(string)
+  default     = {}
+}
