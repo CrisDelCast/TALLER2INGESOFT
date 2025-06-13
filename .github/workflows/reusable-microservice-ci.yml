@@ -97,7 +97,7 @@ jobs:
         echo "IMAGE_NAME=${{ secrets.ACR_NAME }}.azurecr.io/${{ inputs.service_name }}:${{ github.sha }}" >> $GITHUB_ENV
 
     - name: Run Trivy vulnerability scanner
-      uses: aquasecurity/trivy-action@master
+      uses: aquasecurity/trivy-action@0.20.0
       with:
         scan-type: 'image'
         image-ref: ${{ env.IMAGE_NAME }}
