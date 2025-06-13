@@ -159,6 +159,9 @@ jobs:
           IP=$(kubectl get svc api-gateway -o jsonpath='{.status.loadBalancer.ingress[0].ip}')
           echo "host=http://$IP:8080" >> $GITHUB_OUTPUT
 
+      - name: Install Locust
+        run: pip install locust
+
       - name: Run Locust
         run: |
           cd performance
