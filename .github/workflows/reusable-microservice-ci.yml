@@ -107,7 +107,7 @@ jobs:
         vuln-type: 'os,library'
         severity: 'CRITICAL,HIGH'
         scanners: 'vuln'
-        ignorefile: '.trivy/vulnerabilities-to-ignore.txt'
+        trivyignores: '.trivy/vulnerabilities-to-ignore.txt'
 
     - name: Push Docker image if scan passed
       run: |
