@@ -98,4 +98,12 @@ CVE-2025-24813
 CVE-2021-43466
 
 # Eclipse JGit
-CVE-2023-4759 
+CVE-2023-4759
+
+# Netty / Reactor
+GHSA-xpw8-rcwv-8f8p
+CVE-2023-34054
+CVE-2023-34062
+
+# Spring Cloud Gateway
+CVE-2025-41235 
