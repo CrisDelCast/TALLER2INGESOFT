@@ -163,16 +163,7 @@ jobs:
         id: gateway
         run: |
           IP=$(kubectl get svc api-gateway -o jsonpath='{.status.loadBalancer.ingress[0].ip}')
-          echo "host=http://$IP:8080" >> $GITHUB_OUTPUT
-
-      - name: Diagnose Network Connectivity
-        run: |
-          echo "--- Verifying pods status ---"
-          kubectl get pods -o wide
-          echo "--- Describing api-gateway service ---"
-          kubectl describe svc api-gateway
-          echo "--- Attempting to connect to API Gateway at ${{ steps.gateway.outputs.host }} ---"
-          curl -v --connect-timeout 10 ${{ steps.gateway.outputs.host }}
+          echo "host=http://$IP:80" >> $GITHUB_OUTPUT
 
       - name: Install Locust
         run: pip install locust
