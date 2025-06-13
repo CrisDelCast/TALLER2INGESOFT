@@ -128,4 +128,49 @@ jobs:
 
     - name: Verify deployment
       run: |
-        kubectl rollout status deployment/${{ inputs.service_name }} -n default 
+        kubectl rollout status deployment/${{ inputs.service_name }} -n default
+
+  perf_security_tests:
+    name: Performance & Security Tests
+    needs: build_and_deploy
+    if: ${{ github.ref == 'refs/heads/dev' || startsWith(github.ref, 'refs/heads/release') }}
+    concurrency:
+      group: e2e-tests-${{ github.sha }}
+      cancel-in-progress: true
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Login to Azure
+        uses: azure/login@v1
+        with:
+          creds: ${{ secrets.AZURE_CREDENTIALS }}
+
+      - name: Set AKS context
+        uses: azure/aks-set-context@v3
+        with:
+          resource-group: ${{ secrets.AKS_RESOURCE_GROUP }}
+          cluster-name: ${{ secrets.AKS_CLUSTER_NAME }}
+
+      - name: Obtain API Gateway IP
+        id: gateway
+        run: |
+          IP=$(kubectl get svc api-gateway -o jsonpath='{.status.loadBalancer.ingress[0].ip}')
+          echo "host=http://$IP:8080" >> $GITHUB_OUTPUT
+
+      - name: Run Locust
+        run: |
+          cd performance
+          locust -f ecommerce_load_test.py --host=${{ steps.gateway.outputs.host }} --users 200 --spawn-rate 20 --run-time 5m --headless --html performance-reports/locust_report.html
+
+      - name: Run OWASP ZAP Baseline
+        run: |
+          docker run --rm --network host -v $PWD:/zap/wrk owasp/zap2docker-stable \
+            zap-baseline.py -t ${{ steps.gateway.outputs.host }} -r performance/performance-reports/zap_report.html || true
+
+      - name: Upload performance and security reports
+        uses: actions/upload-artifact@v4
+        with:
+          name: perf-security-${{ inputs.service_name }}
+          path: performance/performance-reports/** 
