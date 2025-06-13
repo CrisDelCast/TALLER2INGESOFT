@@ -20,16 +20,15 @@ jobs:
           distribution: 'adopt'
 
       - name: Generate Release Notes
-        run: |
-          chmod +x scripts/generate-release-notes.sh
-          ./scripts/generate-release-notes.sh ${GITHUB_REF#refs/tags/} $(git describe --tags --abbrev=0 ${GITHUB_REF#refs/tags/}^)
+        id: changelog
+        uses: mikepenz/release-changelog-builder-action@v4
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
       - name: Create Release
         uses: softprops/action-gh-release@v1
         with:
-          files: |
-            release_notes_*.md
-          body_path: release_notes_${GITHUB_REF#refs/tags/}.md
+          body: ${{ steps.changelog.outputs.changelog }}
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
@@ -46,4 +45,4 @@ jobs:
           echo "${{ secrets.KUBE_CONFIG }}" > kubeconfig.yaml
           export KUBECONFIG=kubeconfig.yaml
           kubectl set image deployment/${{ github.event.repository.name }} ${{ github.event.repository.name }}=${{ github.repository }}:${{ github.ref_name }} -n ecommerce
-          kubectl rollout status deployment/${{ github.event.repository.name }} -n ecommerce 
+          kubectl rollout status deployment/${{ github.event.repository.name }} -n ecommerce
