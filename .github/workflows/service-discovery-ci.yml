@@ -4,7 +4,7 @@ on:
   push:
     branches:
       - main
-      - develop
+      - dev
     paths:
       - 'service-discovery/**'
       - '.github/workflows/service-discovery-ci.yml'
