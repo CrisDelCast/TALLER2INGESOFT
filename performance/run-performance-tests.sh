@@ -1,28 +1,49 @@
-#!/usr/bin/env bash
-set -e
+#!/bin/bash
 
-# Variables parametrizables
-HOST=${TARGET_HOST:-http://api-gateway:8080}
-USERS=${USERS:-300}
-SPAWN_RATE=${SPAWN_RATE:-30}
-RUNTIME=${RUNTIME:-10m}
-REPORT_DIR=${REPORT_DIR:-performance-reports}
+# Crear directorio para reportes
+mkdir -p performance-reports
 
-mkdir -p "$REPORT_DIR"
+# Instalar dependencias
+pip install locust
 
-echo "Ejecutando prueba de rendimiento con Locust..."
+# Ejecutar pruebas de carga ligera
+echo "Ejecutando prueba de carga ligera..."
+locust -f ecommerce_load_test.py \
+    --headless \
+    -u 100 \
+    -r 10 \
+    --run-time 5m \
+    --host http://api-gateway:8080 \
+    --html performance-reports/light_load_test.html
 
-docker run --rm \
-  -v "$(pwd)":/mnt/locust \
-  -w /mnt/locust/performance \
-  locustio/locust:latest \
-  -f ecommerce_load_test.py \
-  --headless \
-  -u "$USERS" \
-  -r "$SPAWN_RATE" \
-  --run-time "$RUNTIME" \
-  --host "$HOST" \
-  --csv "$REPORT_DIR/locust" \
-  --html "$REPORT_DIR/locust_report.html"
+# Ejecutar pruebas de carga normal
+echo "Ejecutando prueba de carga normal..."
+locust -f ecommerce_load_test.py \
+    --headless \
+    -u 200 \
+    -r 20 \
+    --run-time 10m \
+    --host http://api-gateway:8080 \
+    --html performance-reports/normal_load_test.html
 
-echo "Pruebas de rendimiento completadas. Reportes en $REPORT_DIR" 
+# Ejecutar pruebas de carga pesada
+echo "Ejecutando prueba de carga pesada..."
+locust -f ecommerce_load_test.py \
+    --headless \
+    -u 400 \
+    -r 40 \
+    --run-time 15m \
+    --host http://api-gateway:8080 \
+    --html performance-reports/heavy_load_test.html
+
+# Ejecutar prueba de picos
+echo "Ejecutando prueba de picos..."
+locust -f ecommerce_load_test.py \
+    --headless \
+    -u 1000 \
+    -r 100 \
+    --run-time 5m \
+    --host http://api-gateway:8080 \
+    --html performance-reports/spike_test.html
+
+echo "Pruebas de rendimiento completadas. Reportes disponibles en performance-reports/" 
