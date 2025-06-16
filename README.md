@@ -157,9 +157,6 @@ docker-compose -f docker-compose.dev.yml restart
 
 ## 🌐 Arquitectura Lógica
 
-![Diagrama Lógico](docs/img/diagrama_logico.svg)
-
-> _Figura 1 – Diagrama lógico de microservicios, canales de comunicación y componentes externos._
 
 ---![image](https://github.com/user-attachments/assets/066652a5-254d-474a-839f-857e58395a15)
 
