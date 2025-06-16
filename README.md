@@ -315,8 +315,14 @@ La mayoria de pruebas se realizaron por medio de un pipeline en el cual cada que
 * **Alertmanager** – alertas Slack `#alerts`.
 
 ![image](https://github.com/user-attachments/assets/fea77570-1fe5-4b3d-9a40-125e8e6a5d30)
+
+
 ![image](https://github.com/user-attachments/assets/eca2206c-a9f4-40a1-a0f8-f3a03001ebe4)
+
+
 ![image](https://github.com/user-attachments/assets/37c186a3-8ac4-418c-984a-136693a89882)
+
+
 ![image](https://github.com/user-attachments/assets/0c7f96a8-f835-49ba-bfca-9a9bd1188042)
 
 
