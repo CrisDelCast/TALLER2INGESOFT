@@ -293,8 +293,6 @@ input message: "¿Promocionar a producción?", ok: "Deploy"
 | Rendimiento | Locust | `performance/` | `./run-performance-tests.sh` |
 | Seguridad | OWASP ZAP | `performance/Jenkinsfile` | ejecutado en pipeline |
 
-> _Figura 3 – Cobertura global JaCoCo_  
-> ![JaCoCo](docs/img/jacoco_coverage.png)
 >
 > – Reporte Locust_  
 ![image](https://github.com/user-attachments/assets/60a84fc8-e1f2-4b19-91fd-9a14902eebe7)
