@@ -2,30 +2,30 @@
 
 ## 📑 Tabla de Contenido
 
-- [Microservicios](#microservicios)
-- [Punto 1 – Configuración](#punto-1-configuración)
-  - [Jenkins](#jenkins)
-  - [Docker](#docker)
-  - [Kubernetes](#kubernetes)
-  - [Helm](#helm)
-- [Punto 2 – Pipeline Dev](#punto-2-pipeline-para-dev)
-- [Punto 3 – Pruebas](#punto-3-pruebas)
-  - [Unitarias](#pruebas-unitarias)
-  - [Integración](#pruebas-de-integración)
-  - [End-to-End](#pruebas-end2end)
-  - [Estrés](#pruebas-de-estrés)
-- [Punto 4 – Pipeline Stage](#punto-4-pipeline-de-stage)
-- [Punto 5 – Pipeline Master](#punto-5-pipeline-de-master)
-- [Proyecto Final – Resumen por Requisito](#notas-proyecto-final)
-  - [1 Metodología Ágil & Branching](#punto-1-metodología-ágil-y-estrategia-de-branching)
-  - [2 Infraestructura IaC](#punto-2-infraestructura-como-código-con-terraform)
-  - [3 Patrones de Diseño](#punto-3-patrones-de-diseño)
-  - [4 CI/CD Avanzado](#punto-4-cicd-avanzado)
-  - [5 Pruebas Completas](#punto-5-pruebas-completas)
-  - [6 Change Management](#punto-6-change-management-y-release-notes)
-  - [7 Observabilidad & Monitoreo](#punto-7-observabilidad-y-monitoreo)
-  - [8 Seguridad](#punto-8-seguridad)
-  - [9 Documentación & Presentación](#punto-9-documentación-y-presentación)
+- [Microservicios](microservicios)
+- [Punto 1 – Configuración](punto-1-configuración)
+  - [Jenkins](jenkins)
+  - [Docker](docker)
+  - [Kubernetes](kubernetes)
+  
+- [Punto 2 – Pipeline Dev](punto-2-pipeline-para-dev)
+- [Punto 3 – Pruebas](punto-3-pruebas)
+  - [Unitarias](pruebas-unitarias)
+  - [Integración](pruebas-de-integración)
+  - [End-to-End](pruebas-end2end)
+  - [Estrés](pruebas-de-estrés)
+- [Punto 4 – Pipeline Stage](punto-4-pipeline-de-stage)
+- [Punto 5 – Pipeline Master](punto-5-pipeline-de-master)
+- [Proyecto Final – Resumen por Requisito](notas-proyecto-final)
+  - [1 Metodología Ágil & Branching](punto-1-metodología-ágil-y-estrategia-de-branching)
+  - [2 Infraestructura IaC](punto-2-infraestructura-como-código-con-terraform)
+  - [3 Patrones de Diseño](punto-3-patrones-de-diseño)
+  - [4 CI/CD Avanzado](punto-4-cicd-avanzado)
+  - [5 Pruebas Completas](punto-5-pruebas-completas)
+  - [6 Change Management](punto-6-change-management-y-release-notes)
+  - [7 Observabilidad & Monitoreo](punto-7-observabilidad-y-monitoreo)
+  - [8 Seguridad](punto-8-seguridad)
+  - [9 Documentación & Presentación](punto-9-documentación-y-presentación)
 
 ### Sistema de Microservicios con Jenkins y Kubernetes
 
@@ -161,7 +161,8 @@ docker-compose -f docker-compose.dev.yml restart
 
 > _Figura 1 – Diagrama lógico de microservicios, canales de comunicación y componentes externos._
 
----
+---![image](https://github.com/user-attachments/assets/066652a5-254d-474a-839f-857e58395a15)
+
 
 ## 🏗️ Infraestructura como Código (Terraform)
 
@@ -173,6 +174,11 @@ docker-compose -f docker-compose.dev.yml restart
 | `terraform/modules/monitoring` | Prometheus + Grafana helm charts |
 | `terraform/envs/dev|stage|prod` | Variables específicas de cada ambiente |
 
+![image](https://github.com/user-attachments/assets/ca90e359-2be4-4e92-888f-d668a12942b5)
+![image](https://github.com/user-attachments/assets/473085d1-5091-4ced-8005-f21b5f42806d)
+
+
+
 ```bash
 # Ejemplo despliegue Stage
 aws sso login               # o az login / gcloud auth
@@ -182,7 +188,8 @@ terraform apply
 ```
 
 > _Figura 2 – Captura de `terraform apply` con cambios planificados_  
-> ![Terraform Apply](docs/img/terraform_plan.png)
+>![image](https://github.com/user-attachments/assets/d60f37e2-1caa-4094-ab3e-ac1f32a79d8d)
+
 
 ---
 
@@ -199,7 +206,8 @@ Para la gestión del proyecto se adoptó **Kanban**, maximizando flujo y entrega
 | Testing | QA manual y pruebas E2E | 4 |
 | Done | Listo para deploy / merge a `develop` | — |
 
-![Tablero Kanban](docs/img/kanban_board.png)
+![image](https://github.com/user-attachments/assets/86a9944e-a33e-4905-93c9-a50bb2e44e8e)
+
 
 Políticas:
 * Daily stand-up de 10 min para gestionar flujo.
@@ -288,11 +296,18 @@ input message: "¿Promocionar a producción?", ok: "Deploy"
 > _Figura 3 – Cobertura global JaCoCo_  
 > ![JaCoCo](docs/img/jacoco_coverage.png)
 >
-> _Figura 4 – Reporte Locust_  
-> ![Locust](docs/img/locust_overview.png)
->
-> _Figura 5 – Reporte ZAP_  
-> ![ZAP](docs/img/zap_overview.png)
+> – Reporte Locust_  
+![image](https://github.com/user-attachments/assets/60a84fc8-e1f2-4b19-91fd-9a14902eebe7)
+
+![image](https://github.com/user-attachments/assets/f2d4d9b6-d1fc-4632-86b7-d852393f56a6)
+
+![image](https://github.com/user-attachments/assets/122037a5-6df5-4cb6-90f6-302e00fc94a6)
+
+![image](https://github.com/user-attachments/assets/9ef46f9e-af90-4e5a-ad40-25f0d29b1967)
+
+La mayoria de pruebas se realizaron por medio de un pipeline en el cual cada que se sube un cambio al proyecto se compruebe que todo funcione correctamente, se estan testeando las pruebas de integracion, e2e y unitarias.
+
+
 
 ---
 
@@ -304,7 +319,8 @@ input message: "¿Promocionar a producción?", ok: "Deploy"
 * **Jaeger** – trazas distribuidas.
 * **Alertmanager** – alertas Slack `#alerts`.
 
-![Dashboard Grafana](docs/img/grafana_dashboard.png)
+![image](https://github.com/user-attachments/assets/fea77570-1fe5-4b3d-9a40-125e8e6a5d30)
+
 
 ---
 
@@ -328,24 +344,7 @@ input message: "¿Promocionar a producción?", ok: "Deploy"
 | Tag versión | Release-please Action |
 | Publicar Release Notes | generados en Markdown |
 
-*Ejemplo Release Notes:* **`docs/release/CHANGELOG_v1.1.0.md`**
 
----
-
-## 💰 Costos de Infraestructura (mensual)
-
-| Recurso | Dev | Stage | Prod |
-|---------|-----|-------|------|
-| AKS (3 nodos B4ms) | 90 USD | 180 USD | 360 USD |
-| Azure Database MySQL | 35 | 70 | 140 |
-| Blob Storage (tfstate) | 2 | 2 | 2 |
-| Log Analytics + Grafana | 5 | 10 | 20 |
-| **Total** | **132** | **262** | **522** |
-
-> _Figura 6 – Captura Azure Cost Analysis_  
-> ![Azure Cost](docs/img/azure_costs.png)
-
----
 
 ## 🚀 Despliegue en Kubernetes
 
@@ -390,7 +389,7 @@ terraform show tfplan
 terraform apply tfplan
 
 # Cuando se necesite destruir un entorno efímero
-terraform destroy -var-file=dev.tfvars -auto-approve
+terraform destroy 
 ```
 
 ---
@@ -436,23 +435,3 @@ docker run --rm -v $(pwd):/zap/wrk owasp/zap2docker-stable \
   zap-baseline.py -t http://localhost:8080 -r zap_local.html
 ```
 
----
-
-## 🎥 Recursos Multimedia
-
-* Video Demo – _pendiente de agregar enlace_  
-* Presentación PDF – `docs/presentation/final.pdf`
-
----
-
-## ✔️ Checklist de Control de Calidad
-
-- [x] Despliegue automatizado pasando en Dev & Stage
-- [x] 0 vulnerabilidades High (Trivy)
-- [x] 0 hallazgos High (ZAP)
-- [x] Cobertura líneas > 80 %
-- [x] Latencia p95 < 250 ms (Locust)
-
----
-
-> _Autor actualizado: Equipo IngeSoft V – 2025_
